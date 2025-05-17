@@ -62,3 +62,27 @@ pnpm test:e2e --debug
 ```sh
 pnpm lint
 ```
+
+## 发布到npm
+
+npm login
+npm run build:lib
+npm publish
+
+### 自动发布到npm
+
+### 1. 更新package.json中的版本号
+
+### 2. 提交代码
+
+git add .
+git commit -m "feat: update version to x.x.x"
+
+### 3. 创建新的tag
+
+git tag v1.0.0 # 版本号要和package.json中的一致
+
+### 4. 推送代码和tag
+
+git push origin main
+git push origin v1.0.0
