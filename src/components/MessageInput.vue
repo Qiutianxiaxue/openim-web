@@ -22,7 +22,7 @@
     <div class="input-area">
       <div ref="editorRef" class="editor" contenteditable="true" :placeholder="placeholder" @input="handleInput"
         @paste="handlePaste" @keydown.enter.exact.prevent="handleEnter"
-        @keydown.ctrl.enter.exact.prevent="handleCtrlEnter"></div>
+        @keydown.ctrl.enter.exact.prevent="handleCtrlEnter" @dragover.prevent @drop.prevent="handleDrop"></div>
     </div>
 
     <!-- 表情选择器 -->
@@ -101,6 +101,47 @@ const handlePaste = async (e: ClipboardEvent) => {
   }
 }
 
+const handleDrop = async (e: DragEvent) => {
+  const files = e.dataTransfer?.files
+  if (!files) return
+
+  // 确保编辑器有焦点
+  editorRef.value?.focus()
+
+  // 获取当前选区
+  const selection = window.getSelection()
+  if (!selection) return
+
+  let range: Range
+  try {
+    range = selection.getRangeAt(0)
+  } catch {
+    // 如果没有选区，创建一个新的选区并定位到末尾
+    range = document.createRange()
+    range.selectNodeContents(editorRef.value!)
+    range.collapse(false)
+    selection.removeAllRanges()
+    selection.addRange(range)
+  }
+
+  // 检查选区是否在编辑器内
+  if (!editorRef.value?.contains(range.commonAncestorContainer)) {
+    // 如果不在编辑器内，将光标移动到末尾
+    range = document.createRange()
+    range.selectNodeContents(editorRef.value!)
+    range.collapse(false)
+    selection.removeAllRanges()
+    selection.addRange(range)
+  }
+
+  // 处理拖入的文件
+  for (const file of Array.from(files)) {
+    if (file.type.startsWith('image/')) {
+      await handleFile(file)
+    }
+  }
+}
+
 const handleFile = async (file: File) => {
   // 生成文件唯一标识
   const fileId = md5(file.name + file.size + file.lastModified)
@@ -110,26 +151,46 @@ const handleFile = async (file: File) => {
     const reader = new FileReader()
     reader.onload = (e) => {
       const img = document.createElement('img')
-      img.src = e.target?.result as string
       img.className = 'preview-image'
-      img.style.maxWidth = '200px'
-      img.style.maxHeight = '200px'
 
-      // 获取当前选区
-      const selection = window.getSelection()
-      const range = selection?.getRangeAt(0)
+      // 先设置样式
+      img.style.height = '200px'
+      img.style.width = 'auto'
+      img.style.maxWidth = '100%'
+      img.style.objectFit = 'contain'
+      img.style.display = 'inline-block'
+      img.style.margin = '4px'
+      img.style.borderRadius = '4px'
 
-      if (range) {
+      // 然后设置图片源
+      img.src = e.target?.result as string
+
+      // 图片加载完成后确保样式生效
+      img.onload = () => {
+        // 获取当前选区
+        const selection = window.getSelection()
+        if (!selection) return
+
+        let range: Range
+        try {
+          range = selection.getRangeAt(0)
+        } catch {
+          // 如果没有选区，创建一个新的选区并定位到末尾
+          range = document.createRange()
+          range.selectNodeContents(editorRef.value!)
+          range.collapse(false)
+          selection.removeAllRanges()
+          selection.addRange(range)
+        }
+
         // 在光标位置插入图片
         range.deleteContents()
         range.insertNode(img)
         // 移动光标到图片后面
         range.setStartAfter(img)
         range.setEndAfter(img)
-        selection?.removeAllRanges()
-        selection?.addRange(range)
-      } else {
-        editorRef.value?.appendChild(img)
+        selection.removeAllRanges()
+        selection.addRange(range)
       }
     }
     reader.readAsDataURL(file)
@@ -309,6 +370,9 @@ onUnmounted(() => {
   border-radius: 4px;
   background: #fff;
   z-index: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .input-toolbar {
@@ -317,6 +381,7 @@ onUnmounted(() => {
   align-items: center;
   padding: 8px;
   border-bottom: 1px solid #e0e0e0;
+  flex-shrink: 0;
 }
 
 .toolbar-left {
@@ -354,14 +419,18 @@ onUnmounted(() => {
 
 .input-area {
   padding: 12px;
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .editor {
-  min-height: 80px;
-  max-height: 200px;
+  flex: 1;
   overflow-y: auto;
   outline: none;
   line-height: 1.5;
+  min-height: 0;
 }
 
 .editor:empty:before {
@@ -407,5 +476,8 @@ onUnmounted(() => {
   margin: 4px;
   border-radius: 4px;
   object-fit: contain;
+  height: 200px;
+  width: auto;
+  max-width: 100%;
 }
 </style>

@@ -1,0 +1,11 @@
+export type FileType =
+  | 'word'
+  | 'excel'
+  | 'ppt'
+  | 'pdf'
+  | 'txt'
+  | 'image'
+  | 'audio'
+  | 'video'
+  | 'zip'
+  | 'file'
