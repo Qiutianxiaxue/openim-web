@@ -21,14 +21,14 @@
 
     <div class="input-area">
       <div ref="editorRef" class="editor" contenteditable="true" :placeholder="placeholder" @input="handleInput"
-        @paste="handlePaste" @keydown.enter.exact.prevent="handleEnter"
+        @mouseup="saveLastRange" @keyup="saveLastRange" @paste="handlePaste" @keydown.enter.exact.prevent="handleEnter"
         @keydown.ctrl.enter.exact.prevent="handleCtrlEnter" @dragover.prevent="handleDragOver"
         @dragleave.prevent="handleDragLeave" @drop.prevent="handleDrop"></div>
     </div>
 
     <!-- 表情选择器 -->
     <Teleport to="body">
-      <div v-if="showEmojiPicker" class="emoji-picker" :style="emojiPickerStyle" @click.stop>
+      <div v-if="showEmojiPicker" class="emoji-picker" :style="emojiPickerStyle" @click.stop @mousedown.prevent>
         <div class="emoji-list">
           <span v-for="emoji in emojis" :key="emoji" class="emoji-item" @mousedown.prevent="insertEmoji(emoji)">
             {{ emoji }}
@@ -103,15 +103,136 @@ const handlePaste = async (e: ClipboardEvent) => {
 
   if (!items) return
 
+  // 确保编辑器有焦点
+  editorRef.value?.focus()
+
+  // 获取当前选区
+  const selection = window.getSelection()
+  if (!selection) return
+
+  let range: Range
+  try {
+    range = selection.getRangeAt(0)
+  } catch {
+    // 如果没有选区，创建一个新的选区并定位到末尾
+    range = document.createRange()
+    range.selectNodeContents(editorRef.value!)
+    range.collapse(false)
+    selection.removeAllRanges()
+    selection.addRange(range)
+  }
+
+  // 检查选区是否在编辑器内
+  if (!editorRef.value?.contains(range.commonAncestorContainer)) {
+    // 如果不在编辑器内，将光标移动到末尾
+    range = document.createRange()
+    range.selectNodeContents(editorRef.value!)
+    range.collapse(false)
+    selection.removeAllRanges()
+    selection.addRange(range)
+  }
+
   for (const item of items) {
-    if (item.type.indexOf('image') !== -1) {
+    // 粘贴文件
+    if (item.kind === 'file') {
       const file = item.getAsFile()
       if (file) {
-        await handleFile(file)
+        // 如果是图片，调用 handleFile 处理
+        if (file.type.startsWith('image/')) {
+          await handleFile(file)
+        } else {
+          // 其他文件类型，创建并插入文件预览元素 (与 handleDrop 逻辑一致)
+          const fileId = md5(file.name + file.size + file.lastModified)
+          const previewFile: PreviewFile = {
+            uid: fileId,
+            name: file.name,
+            fileSize: file.size,
+            fileType: getFileType(file.type),
+            showDelIcon: true,
+            file: file
+          }
+
+          // 将文件添加到待发送列表
+          previewFiles.value.push(previewFile)
+
+          // 创建预览元素
+          const previewElement = document.createElement('span')
+          previewElement.className = 'file-preview'
+          previewElement.contentEditable = 'false'
+          previewElement.dataset.fileId = fileId
+
+          // 创建左右布局容器
+          const previewLayout = document.createElement('div')
+          previewLayout.className = 'preview-layout'
+
+          // 创建左侧图标区域
+          const previewIconArea = document.createElement('div')
+          previewIconArea.className = 'preview-icon-area'
+          const icon = document.createElement('i')
+          icon.className = getFileIcon(previewFile.fileType)
+          previewIconArea.appendChild(icon)
+          previewLayout.appendChild(previewIconArea)
+
+          // 创建右侧信息区域
+          const previewInfoArea = document.createElement('div')
+          previewInfoArea.className = 'preview-info-area'
+
+          // 右侧第一行：文件名和扩展名
+          const firstLine = document.createElement('div')
+          firstLine.className = 'preview-first-line'
+
+          const nameSpan = document.createElement('span')
+          nameSpan.className = 'preview-name' // 修改类名
+          // 获取文件名（不含扩展名）和扩展名
+          const fileNameParts = previewFile.name.split('.')
+          const extension = fileNameParts.length > 1 ? fileNameParts.pop() : '' // 确保有扩展名再弹出
+          const name = fileNameParts.join('.')
+          nameSpan.textContent = name // 只显示文件名
+          nameSpan.title = previewFile.name // 添加title用于显示完整文件名
+
+          const extensionSpan = document.createElement('span')
+          extensionSpan.className = 'preview-extension' // 新增类名
+          extensionSpan.textContent = extension ? '.' + extension : '' // 显示点和扩展名
+          extensionSpan.title = extension ? '.' + extension : ''
+
+          firstLine.appendChild(nameSpan)
+          firstLine.appendChild(extensionSpan)
+
+          previewInfoArea.appendChild(firstLine)
+
+          // 右侧第二行：文件大小
+          const secondLine = document.createElement('div')
+          secondLine.className = 'preview-second-line'
+
+          const sizeSpan = document.createElement('span')
+          sizeSpan.className = 'preview-size'
+          sizeSpan.textContent = formatFileSize(previewFile.fileSize)
+          secondLine.appendChild(sizeSpan)
+
+          previewInfoArea.appendChild(secondLine)
+
+          previewLayout.appendChild(previewInfoArea)
+          previewElement.appendChild(previewLayout)
+
+          // 在光标位置插入预览
+          range.deleteContents()
+          range.insertNode(previewElement)
+
+          // 移动光标到预览后面
+          range.setStartAfter(previewElement)
+          range.setEndAfter(previewElement)
+          selection.removeAllRanges()
+          selection.addRange(range)
+        }
+        // 更新内容
+        content.value = editorRef.value?.innerText || ''
       }
     } else if (item.type === 'text/plain') {
+      // 粘贴文本
       item.getAsString((text) => {
         insertText(text)
+        // 更新内容
+        content.value = editorRef.value?.innerText || ''
       })
     }
   }
@@ -418,6 +539,20 @@ const toggleEmojiPicker = () => {
   }
 }
 
+const lastRange = ref<Range | null>(null)
+
+// 保存最后的光标位置
+const saveLastRange = () => {
+  const selection = window.getSelection()
+  if (selection && selection.rangeCount > 0) {
+    const range = selection.getRangeAt(0)
+    // 确保保存的 range 在编辑器内
+    if (editorRef.value?.contains(range.commonAncestorContainer)) {
+      lastRange.value = range.cloneRange() // 克隆 Range 以免被修改
+    }
+  }
+}
+
 const insertEmoji = (emoji: string) => {
   if (editorRef.value) {
     // 确保输入框有焦点
@@ -426,18 +561,32 @@ const insertEmoji = (emoji: string) => {
     const selection = window.getSelection()
     if (!selection) return
 
-    // 获取当前选区
-    const range = selection.getRangeAt(0)
+    let range: Range | null = null
 
-    // 检查选区是否在编辑器内
-    if (!editorRef.value.contains(range.commonAncestorContainer)) {
-      // 如果不在编辑器内，将光标移动到末尾
-      const newRange = document.createRange()
-      newRange.selectNodeContents(editorRef.value)
-      newRange.collapse(false)
-      selection.removeAllRanges()
-      selection.addRange(newRange)
+    // 尝试获取当前选区
+    if (selection.rangeCount > 0) {
+      const currentRange = selection.getRangeAt(0)
+      // 检查当前选区是否在编辑器内
+      if (editorRef.value.contains(currentRange.commonAncestorContainer)) {
+        range = currentRange
+      }
     }
+
+    // 如果没有有效的当前选区，尝试使用保存的最后光标位置
+    if (!range && lastRange.value) {
+      range = lastRange.value
+      selection.removeAllRanges()
+      selection.addRange(range)
+    } else if (!range) {
+      // 如果没有有效的当前选区也没有保存的光标位置，则将光标定位到末尾
+      range = document.createRange()
+      range.selectNodeContents(editorRef.value)
+      range.collapse(false)
+      selection.removeAllRanges()
+      selection.addRange(range)
+    }
+
+    if (!range) return // 理论上不会发生，但为了类型安全
 
     // 在光标位置插入表情
     range.deleteContents()
@@ -453,10 +602,8 @@ const insertEmoji = (emoji: string) => {
     selection.removeAllRanges()
     selection.addRange(newRange)
 
-    // 强制更新选区
-    editorRef.value.focus()
-    selection.removeAllRanges()
-    selection.addRange(newRange)
+    // 更新保存的最后光标位置
+    saveLastRange()
 
     // 更新内容
     content.value = editorRef.value.innerText
@@ -531,19 +678,24 @@ const handleClickOutside = (e: MouseEvent) => {
   const target = e.target as HTMLElement
   if (!target.closest('.emoji-picker') && !target.closest('.toolbar-btn')) {
     showEmojiPicker.value = false
+    // 在关闭表情选择器时保存最后的光标位置
+    saveLastRange()
   }
 }
 
+// 在输入框失去焦点时保存光标位置
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
   window.addEventListener('resize', updateEmojiPickerPosition)
   window.addEventListener('scroll', updateEmojiPickerPosition)
+  editorRef.value?.addEventListener('blur', saveLastRange)
 })
 
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
   window.removeEventListener('resize', updateEmojiPickerPosition)
   window.removeEventListener('scroll', updateEmojiPickerPosition)
+  editorRef.value?.removeEventListener('blur', saveLastRange)
   previewFiles.value.forEach(file => {
     if (file.url) {
       URL.revokeObjectURL(file.url)
@@ -627,35 +779,6 @@ onUnmounted(() => {
     &:empty:before {
       content: attr(placeholder);
       color: #999;
-    }
-  }
-
-  .emoji-picker {
-    position: fixed;
-    background: white;
-    border: 1px solid #e0e0e0;
-    border-radius: 4px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    padding: 8px;
-    z-index: 9999;
-    min-width: 300px;
-  }
-
-  .emoji-list {
-    display: grid;
-    grid-template-columns: repeat(8, 1fr);
-    gap: 4px;
-  }
-
-  .emoji-item {
-    cursor: pointer;
-    padding: 4px;
-    text-align: center;
-    border-radius: 4px;
-    transition: background-color 0.2s;
-
-    &:hover {
-      background-color: #f5f5f5;
     }
   }
 
@@ -770,6 +893,36 @@ onUnmounted(() => {
     width: auto;
     max-width: 100%;
     vertical-align: middle;
+  }
+}
+
+/* 表情弹出框样式 */
+.emoji-picker {
+  position: fixed;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  padding: 8px;
+  z-index: 9999;
+  min-width: 300px;
+}
+
+.emoji-list {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 4px;
+}
+
+.emoji-item {
+  cursor: pointer;
+  padding: 4px;
+  text-align: center;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: #f5f5f5;
   }
 }
 </style>
