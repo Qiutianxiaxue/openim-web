@@ -102,7 +102,7 @@ onUnmounted(() => {
           </vxe-layout-header>
 
           <vxe-layout-body>
-            <vxe-split vertical height="100%" :bar-config="{ height: 2 }"
+            <vxe-split vertical height="100%" :bar-config="{ height: 1 }"
               :item-config="{ minHeight: 300, minWidth: 250 }">
               <vxe-split-pane>
                 <div>

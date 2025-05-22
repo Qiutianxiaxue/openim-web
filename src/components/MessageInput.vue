@@ -25,9 +25,7 @@
     </div>
 
     <div class="send-area">
-      <button class="send-btn" :disabled="!canSend" @click.stop="handleSend">
-        发送
-      </button>
+      <vxe-button status="primary" :disabled="!canSend" @click.stop="handleSend" content="发送"></vxe-button>
     </div>
 
     <!-- 表情选择器 -->

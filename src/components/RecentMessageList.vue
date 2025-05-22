@@ -61,7 +61,7 @@ const generateDummyChatList = (count: number): ChatItem[] => {
     list.push({
       id: i,
       name: `用户 ${i}`,
-      avatar: `https://placeholder.com/48?text=${i}`,
+      avatar: `https://vxeui.com/logo.png`,
       lastMessage: `这是用户 ${i} 的最后一条消息。`,
       time: `今天 ${Math.floor(Math.random() * 24).toString().padStart(2, '0')}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')}`,
     })
@@ -70,7 +70,7 @@ const generateDummyChatList = (count: number): ChatItem[] => {
 }
 
 // 初始化聊天列表数据
-chatList.value = generateDummyChatList(100)
+chatList.value = generateDummyChatList(2000)
 
 // 过滤后的聊天列表
 const filteredChatList = computed(() => {
@@ -99,6 +99,7 @@ const handleChatSelect = (chat: ChatItem) => {
 <style lang="scss">
 .recent-message-list {
   background-color: var(--vxe-ui-modal-header-background-color) !important;
+  border-right: 1px solid var(--vxe-ui-input-border-color);
 
   .vxe-list--virtual-wrapper {
     overflow: overlay !important;
@@ -115,15 +116,11 @@ const handleChatSelect = (chat: ChatItem) => {
 
     /* 滚动条滑块 */
     &::-webkit-scrollbar-thumb {
-      background-color: rgba(0, 0, 0, 0.3);
+      background-color: var(--vxe-ui-font-tinge-color);
       /* 滑块颜色 */
       border-radius: 6px;
       /* 滑块圆角 */
-      visibility: hidden;
-      /* 默认隐藏滑块 */
-      opacity: 0;
-      /* 默认完全透明 */
-      transition: opacity 0.2s ease-in-out;
+      visibility: visible;
       /* 限制背景仅应用于内容区域 */
       background-clip: content-box;
     }
@@ -132,16 +129,6 @@ const handleChatSelect = (chat: ChatItem) => {
     &::-webkit-scrollbar-track {
       background-color: transparent;
       /* 轨道颜色 */
-    }
-
-    /* 鼠标悬停时显示滑块 */
-    &:hover {
-      &::-webkit-scrollbar-thumb {
-        visibility: visible;
-        /* 悬停时显示滑块 */
-        opacity: 1;
-        /* 悬停时完全不透明 */
-      }
     }
   }
 
@@ -157,7 +144,7 @@ const handleChatSelect = (chat: ChatItem) => {
   padding: 10px;
   overflow: hidden;
   background-color: var(--vxe-ui-modal-header-background-color);
-  border-bottom: 1px solid var(--vxe-ui-modal-header-background-color);
+  border-bottom: 1px solid var(--vxe-ui-input-border-color);
 
   .vxe-layout-container {
     background-color: var(--vxe-ui-modal-header-background-color) !important;
@@ -184,7 +171,7 @@ const handleChatSelect = (chat: ChatItem) => {
   .chat-avatar {
     width: 48px;
     height: 48px;
-    border-radius: 50%;
+    border-radius: 8px;
     object-fit: cover;
   }
 
