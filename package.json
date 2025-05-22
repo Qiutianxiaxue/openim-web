@@ -1,10 +1,12 @@
 {
   "name": "openim-web",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "private": false,
   "type": "module",
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "LICENSE"
   ],
   "main": "./dist/openim-web.umd.js",
   "module": "./dist/openim-web.es.js",
@@ -27,7 +29,9 @@
     "lint:eslint": "eslint . --fix",
     "lint": "run-s lint:*",
     "format": "prettier --write src/",
-    "build:lib": "vue-tsc && vite build --config vite.lib.config.ts"
+    "build:lib": "vue-tsc && vite build --config vite.lib.config.ts",
+    "prepublishOnly": "npm run build",
+    "release": "npm version patch --no-git-tag-version && npm publish --access public"
   },
   "dependencies": {
     "pinia": "^3.0.1",
@@ -69,6 +73,14 @@
     "chat",
     "components"
   ],
-  "author": "Your Name",
+  "author": "Qiutianxiaxue",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Qiutianxiaxue/openim-web.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Qiutianxiaxue/openim-web/issues"
+  },
+  "homepage": "https://github.com/Qiutianxiaxue/openim-web#readme",
   "license": "MIT"
 }
