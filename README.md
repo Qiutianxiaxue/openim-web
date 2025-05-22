@@ -1,63 +1,63 @@
 # openim-web
 
-This template should help get you started developing with Vue 3 in Vite.
+这是一个基于Vue 3的即时通讯UI组件库。
 
-## Recommended IDE Setup
+## 推荐开发环境
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (并禁用Vetur)。
 
-## Type Support for `.vue` Imports in TS
+## TypeScript支持
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+TypeScript默认无法处理`.vue`文件的类型信息，所以我们使用`vue-tsc`替代`tsc`进行类型检查。在编辑器中，我们需要[Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar)来让TypeScript语言服务识别`.vue`文件的类型。
 
-## Customize configuration
+## 自定义配置
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+查看[Vite配置参考](https://vite.dev/config/)。
 
-## Project Setup
+## 项目设置
 
 ```sh
 pnpm install
 ```
 
-### Compile and Hot-Reload for Development
+### 开发环境编译和热重载
 
 ```sh
 pnpm dev
 ```
 
-### Type-Check, Compile and Minify for Production
+### 生产环境类型检查、编译和压缩
 
 ```sh
 pnpm build
 ```
 
-### Run Unit Tests with [Vitest](https://vitest.dev/)
+### 使用[Vitest](https://vitest.dev/)运行单元测试
 
 ```sh
 pnpm test:unit
 ```
 
-### Run End-to-End Tests with [Playwright](https://playwright.dev)
+### 使用[Playwright](https://playwright.dev)运行端到端测试
 
 ```sh
-# Install browsers for the first run
+# 首次运行需要安装浏览器
 npx playwright install
 
-# When testing on CI, must build the project first
+# 在CI环境中测试时，必须先构建项目
 pnpm build
 
-# Runs the end-to-end tests
+# 运行端到端测试
 pnpm test:e2e
-# Runs the tests only on Chromium
+# 仅在Chromium中运行测试
 pnpm test:e2e --project=chromium
-# Runs the tests of a specific file
+# 运行特定文件的测试
 pnpm test:e2e tests/example.spec.ts
-# Runs the tests in debug mode
+# 在调试模式下运行测试
 pnpm test:e2e --debug
 ```
 
-### Lint with [ESLint](https://eslint.org/)
+### 使用[ESLint](https://eslint.org/)进行代码检查
 
 ```sh
 pnpm lint
@@ -65,24 +65,66 @@ pnpm lint
 
 ## 发布到npm
 
+### 手动发布
+
+```sh
 npm login
 npm run build:lib
 npm publish
+```
 
-### 自动发布到npm
+### 自动发布
 
-### 1. 更新package.json中的版本号
+1. 更新package.json中的版本号
 
-### 2. 提交代码
+2. 提交代码
 
+```sh
 git add .
 git commit -m "feat: update version to x.x.x"
+```
 
-### 3. 创建新的tag
+3. 创建新的tag
 
-git tag v1.0.0 # 版本号要和package.json中的一致
+```sh
+git tag v1.0.0  # 版本号要和package.json中的一致
+```
 
-### 4. 推送代码和tag
+4. 推送代码和tag
 
+```sh
 git push origin main
 git push origin v1.0.0
+```
+
+## 使用方法
+
+### 全局注册
+
+```typescript
+import { createApp } from 'vue'
+import { OpenIMWeb } from 'openim-web'
+import 'openim-web/dist/style.css'
+import App from './App.vue'
+
+const app = createApp(App)
+app.use(OpenIMWeb)
+app.mount('#app')
+```
+
+### 按需引入
+
+```vue
+<template>
+  <OpenIMWeb />
+</template>
+
+<script setup>
+import { OpenIMWeb } from 'openim-web'
+import 'openim-web/dist/style.css'
+</script>
+```
+
+## 许可证
+
+MIT
