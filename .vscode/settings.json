@@ -10,7 +10,7 @@
   },
   "editor.formatOnSave": true,
   "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "cSpell.words": ["persistedstate"],
+  "cSpell.words": ["openim", "oxlint", "persistedstate", "Qiutianxiaxue"],
   "i18n-ally.localesPaths": ["src/locales"],
   "i18n-ally.keystyle": "nested",
   "i18n-ally.namespace": true,
@@ -22,5 +22,7 @@
   "i18n-ally.displayLanguage": "zh-CN",
   "i18n-ally.preferredDelimiter": ".",
   "i18n-ally.extract.autoDetect": true,
-  "i18n-ally.extract.keygenStyle": "nested"
+  "i18n-ally.extract.keygenStyle": "nested",
+  "json.schemas": [],
+  "json.validate.enable": false
 }
