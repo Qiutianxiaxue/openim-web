@@ -67,13 +67,43 @@ pnpm lint
 
 ### 手动发布
 
-```sh
-npm login
-npm run build:lib
+1. **自动发布（推荐）**
+
+```bash
+# 自动更新小版本号并发布
+pnpm release
+```
+
+这个命令会：
+
+- 自动更新小版本号（patch）
+- 构建项目
+- 发布到 npm
+
+2. **手动发布**
+   如果需要手动控制版本号：
+
+```bash
+# 更新版本号
+npm version patch  # 小版本更新
+npm version minor  # 中版本更新
+npm version major  # 大版本更新
+
+# 构建
+pnpm build
+
+# 发布
 npm publish
 ```
 
-### 自动发布
+注意：
+
+- 使用 `pnpm release` 会自动更新小版本号
+- 如果需要更新中版本或大版本，请使用手动发布方式
+- 发布前请确保所有测试通过
+- 发布前请确保文档已更新
+
+### GITHUB自动发布
 
 1. 更新package.json中的版本号
 
