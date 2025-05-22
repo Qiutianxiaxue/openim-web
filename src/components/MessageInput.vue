@@ -711,7 +711,7 @@ const handleDragLeave = (e: DragEvent) => {
   .message-input {
     position: relative;
     border-radius: 4px;
-    background: #fff;
+    background: var(--vxe-ui-modal-header-background-color);
     z-index: 1;
     display: flex;
     flex-direction: column;
@@ -745,7 +745,7 @@ const handleDragLeave = (e: DragEvent) => {
     }
 
     &:hover {
-      background-color: #f5f5f5;
+      background-color: var(--vxe-ui-base-hover-background-color);
     }
   }
 
@@ -766,11 +766,11 @@ const handleDragLeave = (e: DragEvent) => {
     white-space: pre-wrap;
     word-break: break-all;
     font-size: 16px;
-    color: #333;
+    color: var(--vxe-ui-font-color);
 
     &:empty:before {
       content: attr(placeholder);
-      color: #999;
+      color: var(--vxe-ui-input-placeholder-color);
       font-size: 16px;
     }
   }
@@ -919,8 +919,8 @@ const handleDragLeave = (e: DragEvent) => {
 /* 表情弹出框样式 */
 .emoji-picker {
   position: fixed;
-  background: white;
-  border: 1px solid #e0e0e0;
+  background: var(--vxe-ui-modal-header-background-color);
+  border: 1px solid var(--vxe-ui-base-popup-border-color);
   border-radius: 4px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   padding: 8px;
@@ -944,7 +944,7 @@ const handleDragLeave = (e: DragEvent) => {
   line-height: 1;
 
   &:hover {
-    background-color: #f5f5f5;
+    background-color: var(--vxe-ui-base-hover-background-color);
   }
 }
 </style>

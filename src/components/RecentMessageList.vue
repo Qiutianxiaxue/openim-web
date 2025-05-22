@@ -1,7 +1,7 @@
 <template>
   <vxe-layout-container vertical class="recent-message-list">
     <vxe-layout-header>
-      <div style="height: 56px;padding: 10px;overflow: hidden;">
+      <div class="search-area">
         <vxe-layout-container>
           <vxe-layout-body>
             <vxe-input v-model="searchKeyword" placeholder="搜索" type="search" clearable></vxe-input>
@@ -70,7 +70,7 @@ const generateDummyChatList = (count: number): ChatItem[] => {
 }
 
 // 初始化聊天列表数据
-chatList.value = generateDummyChatList(2000)
+chatList.value = generateDummyChatList(100)
 
 // 过滤后的聊天列表
 const filteredChatList = computed(() => {
@@ -98,84 +98,69 @@ const handleChatSelect = (chat: ChatItem) => {
 
 <style lang="scss">
 .recent-message-list {
-  background-color: #f5f7fa !important;
+  background-color: var(--vxe-ui-modal-header-background-color) !important;
 
-  /* 自定义滚动条样式 */
-  /* 隐藏默认滚动条，但保留宽度 */
-  & ::-webkit-scrollbar {
-    width: 8px;
-    /* 垂直滚动条宽度 */
-    height: 8px;
-    /* 水平滚动条高度 */
-    background-color: transparent;
+  .vxe-list--virtual-wrapper {
+    overflow: overlay !important;
+
+    /* 自定义滚动条样式 */
+    /* 隐藏默认滚动条，但保留宽度 */
+    &::-webkit-scrollbar {
+      width: 8px;
+      /* 垂直滚动条宽度 */
+      height: 8px;
+      /* 水平滚动条高度 */
+      background-color: transparent;
+    }
+
+    /* 滚动条滑块 */
+    &::-webkit-scrollbar-thumb {
+      background-color: rgba(0, 0, 0, 0.3);
+      /* 滑块颜色 */
+      border-radius: 6px;
+      /* 滑块圆角 */
+      visibility: hidden;
+      /* 默认隐藏滑块 */
+      opacity: 0;
+      /* 默认完全透明 */
+      transition: opacity 0.2s ease-in-out;
+      /* 限制背景仅应用于内容区域 */
+      background-clip: content-box;
+    }
+
+    /* 滚动条轨道 */
+    &::-webkit-scrollbar-track {
+      background-color: transparent;
+      /* 轨道颜色 */
+    }
+
+    /* 鼠标悬停时显示滑块 */
+    &:hover {
+      &::-webkit-scrollbar-thumb {
+        visibility: visible;
+        /* 悬停时显示滑块 */
+        opacity: 1;
+        /* 悬停时完全不透明 */
+      }
+    }
   }
 
-  /* 滚动条滑块 */
-  & ::-webkit-scrollbar-thumb {
-    background-color: rgba(0, 0, 0, 0.3);
-    /* 滑块颜色 */
-    border-radius: 6px;
-    /* 滑块圆角 */
-    visibility: hidden;
-    /* 默认隐藏滑块 */
-    opacity: 0;
-    /* 默认完全透明 */
-    transition: opacity 0.2s ease-in-out;
-    /* 添加过渡效果 */
+  .vxe-layout-body--inner,
+  .vxe-layout-container {
+    overflow: hidden;
   }
 
-  /* 滚动条轨道 */
-  & ::-webkit-scrollbar-track {
-    background-color: transparent;
-    /* 轨道颜色 */
-  }
-
-  /* 鼠标悬停时显示滑块 */
-  &:hover ::-webkit-scrollbar-thumb {
-    visibility: visible;
-    /* 悬停时显示滑块 */
-    opacity: 1;
-    /* 悬停时完全不透明 */
-  }
 }
 
 .search-area {
-  padding: 16px;
-  display: flex;
-  gap: 12px;
-  background-color: #fff;
-  border-bottom: 1px solid #e4e7ed;
+  height: 56px;
+  padding: 10px;
+  overflow: hidden;
+  background-color: var(--vxe-ui-modal-header-background-color);
+  border-bottom: 1px solid var(--vxe-ui-modal-header-background-color);
 
-  .search-input {
-    flex: 1;
-    padding: 8px 12px;
-    border: 1px solid #dcdfe6;
-    border-radius: 4px;
-    font-size: 14px;
-    outline: none;
-
-    &:focus {
-      border-color: #409eff;
-    }
-  }
-
-  .new-chat-button {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    border: none;
-    background-color: #409eff;
-    color: #fff;
-    font-size: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    outline: none;
-
-    &:hover {
-      background-color: #66b1ff;
-    }
+  .vxe-layout-container {
+    background-color: var(--vxe-ui-modal-header-background-color) !important;
   }
 }
 
@@ -189,11 +174,11 @@ const handleChatSelect = (chat: ChatItem) => {
   transition: background-color 0.3s;
 
   &:hover {
-    background-color: #f0f2f5;
+    background-color: var(--vxe-ui-base-hover-background-color);
   }
 
   &.active {
-    background-color: #e6f1fc;
+    background-color: var(--vxe-ui-base-active-background-color);
   }
 
   .chat-avatar {
@@ -215,18 +200,18 @@ const handleChatSelect = (chat: ChatItem) => {
 
       .chat-name {
         font-weight: 500;
-        color: #303133;
+        color: var(--vxe-ui-font-color);
       }
 
       .chat-time {
         font-size: 12px;
-        color: #909399;
+        color: var(--vxe-ui-font-lighten-color);
       }
     }
 
     .chat-message {
       font-size: 13px;
-      color: #606266;
+      color: var(--vxe-ui-font-lighten-color);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;

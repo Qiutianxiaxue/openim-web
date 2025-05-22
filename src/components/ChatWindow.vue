@@ -4,6 +4,7 @@ import type { ChatProps, ChatEmits } from '@/types/chat'
 import type { Message } from '@/types/message'
 import MessageInput from "./MessageInput.vue"
 import RecentMessageList from "./RecentMessageList.vue"
+import ThemeSwitch from "./ThemeSwitch/index.vue"
 
 const props = withDefaults(defineProps<ChatProps>(), {
   theme: 'light',
@@ -104,7 +105,9 @@ onUnmounted(() => {
             <vxe-split vertical height="100%" :bar-config="{ height: 2 }"
               :item-config="{ minHeight: 300, minWidth: 250 }">
               <vxe-split-pane>
-                <div>顶部</div>
+                <div>
+                  <ThemeSwitch></ThemeSwitch>
+                </div>
               </vxe-split-pane>
               <vxe-split-pane height="300">
                 <MessageInput placeholder="请输入消息..." @send="handleMessage" />
