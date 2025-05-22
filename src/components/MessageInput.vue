@@ -104,6 +104,16 @@ const canSend = computed(() => {
 const handleInput = (e: Event) => {
   const target = e.target as HTMLElement
   content.value = target.innerText
+
+  // 当内容为空时，强制清空 innerHTML，确保 :empty 伪类生效
+  if (content.value.trim() === '') {
+    // 使用 nextTick 确保在 DOM 更新后再清空
+    nextTick(() => {
+      if (target.innerText.trim() === '') { // 再次检查，避免意外清空
+        target.innerHTML = '';
+      }
+    })
+  }
 }
 
 // 获取文件类型
@@ -809,8 +819,8 @@ const handleDragLeave = (e: DragEvent) => {
     margin: 4px;
     vertical-align: bottom;
     user-select: none;
-    background: #f5f5f5;
-    border: 1px solid #e0e0e0;
+    background: var(--vxe-ui-font-tinge-color);
+    border: 1px solid var(--vxe-ui-font-tinge-color);
     border-radius: 4px;
     padding: 8px;
     pointer-events: none;
