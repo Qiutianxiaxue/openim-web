@@ -97,6 +97,190 @@ const handleInput = (e: Event) => {
   content.value = target.innerText
 }
 
+// 获取文件类型
+const getFileType = (mimeType: string): FileType => {
+  if (mimeType.startsWith('image/')) return 'image'
+  if (mimeType.startsWith('video/')) return 'video'
+  if (mimeType.startsWith('audio/')) return 'audio'
+  if (mimeType.includes('pdf')) return 'pdf'
+  if (mimeType.includes('word') || mimeType.includes('doc')) return 'word'
+  if (mimeType.includes('excel') || mimeType.includes('sheet')) return 'excel'
+  if (mimeType.includes('powerpoint') || mimeType.includes('presentation')) return 'ppt'
+  if (mimeType.includes('zip') || mimeType.includes('rar')) return 'zip'
+  if (mimeType.includes('text')) return 'txt'
+  return 'file'
+}
+
+// 添加文件处理函数
+const processFile = async (file: File) => {
+  // 生成文件唯一标识
+  const fileId = md5(file.name + file.size + file.lastModified)
+
+  // 如果是图片，可以预览
+  if (file.type.startsWith('image/')) {
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const img = document.createElement('img')
+      img.className = 'preview-image'
+
+      // 先设置样式
+      img.style.height = '72px'
+      img.style.width = 'auto'
+      img.style.maxWidth = '100%'
+      img.style.objectFit = 'contain'
+      img.style.display = 'inline-block'
+      img.style.margin = '4px'
+      img.style.borderRadius = '4px'
+
+      // 然后设置图片源
+      const imageUrl = e.target?.result as string
+      img.src = imageUrl
+
+      // 将图片文件信息添加到 previewFiles
+      const previewFile: PreviewFile = {
+        uid: fileId,
+        name: file.name,
+        fileSize: file.size,
+        fileType: 'image',
+        url: imageUrl,
+        file: file
+      }
+      previewFiles.value.push(previewFile)
+
+      // 图片加载完成后确保样式生效
+      img.onload = () => {
+        insertElementAtCursor(img)
+      }
+    }
+    reader.readAsDataURL(file)
+  } else {
+    // 非图片文件，创建文件预览元素
+    const previewFile: PreviewFile = {
+      uid: fileId,
+      name: file.name,
+      fileSize: file.size,
+      fileType: getFileType(file.type),
+      showDelIcon: true,
+      file: file
+    }
+
+    // 将文件添加到待发送列表
+    previewFiles.value.push(previewFile)
+
+    // 创建预览元素
+    const previewElement = createFilePreviewElement(previewFile)
+    insertElementAtCursor(previewElement)
+  }
+
+  emit('send', {
+    type: 'file',
+    content: file,
+    fileType: file.type,
+    fileId
+  })
+}
+
+// 在光标位置插入元素
+const insertElementAtCursor = (element: HTMLElement) => {
+  // 获取当前选区
+  const selection = window.getSelection()
+  if (!selection) return
+
+  let range: Range
+  try {
+    range = selection.getRangeAt(0)
+  } catch {
+    // 如果没有选区，创建一个新的选区并定位到末尾
+    range = document.createRange()
+    range.selectNodeContents(editorRef.value!)
+    range.collapse(false)
+    selection.removeAllRanges()
+    selection.addRange(range)
+  }
+
+  // 在光标位置插入元素
+  range.deleteContents()
+  range.insertNode(element)
+
+  // 移动光标到元素后面
+  range.setStartAfter(element)
+  range.setEndAfter(element)
+  selection.removeAllRanges()
+  selection.addRange(range)
+
+  // 更新内容
+  content.value = editorRef.value?.innerText || ''
+}
+
+// 创建文件预览元素
+const createFilePreviewElement = (previewFile: PreviewFile) => {
+  const previewElement = document.createElement('span')
+  previewElement.className = 'file-preview'
+  previewElement.contentEditable = 'false'
+  previewElement.dataset.fileId = String(previewFile.uid)
+
+  // 创建左右布局容器
+  const previewLayout = document.createElement('div')
+  previewLayout.className = 'preview-layout'
+
+  // 创建左侧图标区域
+  const previewIconArea = document.createElement('div')
+  previewIconArea.className = 'preview-icon-area'
+  const icon = document.createElement('i')
+  icon.className = getFileIcon(previewFile.fileType)
+  previewIconArea.appendChild(icon)
+  previewLayout.appendChild(previewIconArea)
+
+  // 创建右侧信息区域
+  const previewInfoArea = document.createElement('div')
+  previewInfoArea.className = 'preview-info-area'
+
+  // 右侧第一行：文件名和扩展名
+  const firstLine = document.createElement('div')
+  firstLine.className = 'preview-first-line'
+
+  const nameSpan = document.createElement('span')
+  nameSpan.className = 'preview-name'
+  // 获取文件名（不含扩展名）和扩展名
+  const fileNameParts = previewFile.name.split('.')
+  const extension = fileNameParts.length > 1 ? fileNameParts.pop() : ''
+  const name = fileNameParts.join('.')
+  nameSpan.textContent = name
+  nameSpan.title = previewFile.name
+
+  const extensionSpan = document.createElement('span')
+  extensionSpan.className = 'preview-extension'
+  extensionSpan.textContent = extension ? '.' + extension : ''
+  extensionSpan.title = extension ? '.' + extension : ''
+
+  firstLine.appendChild(nameSpan)
+  firstLine.appendChild(extensionSpan)
+
+  previewInfoArea.appendChild(firstLine)
+
+  // 右侧第二行：文件大小
+  const secondLine = document.createElement('div')
+  secondLine.className = 'preview-second-line'
+
+  const sizeSpan = document.createElement('span')
+  sizeSpan.className = 'preview-size'
+  sizeSpan.textContent = formatFileSize(previewFile.fileSize)
+  secondLine.appendChild(sizeSpan)
+
+  previewInfoArea.appendChild(secondLine)
+
+  previewLayout.appendChild(previewInfoArea)
+  previewElement.appendChild(previewLayout)
+
+  return previewElement
+}
+
+// 修改 handleFile 函数
+const handleFile = async (file: File) => {
+  await processFile(file)
+}
+
+// 修改 handlePaste 函数
 const handlePaste = async (e: ClipboardEvent) => {
   e.preventDefault()
   const items = e.clipboardData?.items
@@ -137,132 +321,18 @@ const handlePaste = async (e: ClipboardEvent) => {
     if (item.kind === 'file') {
       const file = item.getAsFile()
       if (file) {
-        // 如果是图片，调用 handleFile 处理
-        if (file.type.startsWith('image/')) {
-          await handleFile(file)
-        } else {
-          // 其他文件类型，创建并插入文件预览元素 (与 handleDrop 逻辑一致)
-          const fileId = md5(file.name + file.size + file.lastModified)
-          const previewFile: PreviewFile = {
-            uid: fileId,
-            name: file.name,
-            fileSize: file.size,
-            fileType: getFileType(file.type),
-            showDelIcon: true,
-            file: file
-          }
-
-          // 将文件添加到待发送列表
-          previewFiles.value.push(previewFile)
-
-          // 创建预览元素
-          const previewElement = document.createElement('span')
-          previewElement.className = 'file-preview'
-          previewElement.contentEditable = 'false'
-          previewElement.dataset.fileId = fileId
-
-          // 创建左右布局容器
-          const previewLayout = document.createElement('div')
-          previewLayout.className = 'preview-layout'
-
-          // 创建左侧图标区域
-          const previewIconArea = document.createElement('div')
-          previewIconArea.className = 'preview-icon-area'
-          const icon = document.createElement('i')
-          icon.className = getFileIcon(previewFile.fileType)
-          previewIconArea.appendChild(icon)
-          previewLayout.appendChild(previewIconArea)
-
-          // 创建右侧信息区域
-          const previewInfoArea = document.createElement('div')
-          previewInfoArea.className = 'preview-info-area'
-
-          // 右侧第一行：文件名和扩展名
-          const firstLine = document.createElement('div')
-          firstLine.className = 'preview-first-line'
-
-          const nameSpan = document.createElement('span')
-          nameSpan.className = 'preview-name' // 修改类名
-          // 获取文件名（不含扩展名）和扩展名
-          const fileNameParts = previewFile.name.split('.')
-          const extension = fileNameParts.length > 1 ? fileNameParts.pop() : '' // 确保有扩展名再弹出
-          const name = fileNameParts.join('.')
-          nameSpan.textContent = name // 只显示文件名
-          nameSpan.title = previewFile.name // 添加title用于显示完整文件名
-
-          const extensionSpan = document.createElement('span')
-          extensionSpan.className = 'preview-extension' // 新增类名
-          extensionSpan.textContent = extension ? '.' + extension : '' // 显示点和扩展名
-          extensionSpan.title = extension ? '.' + extension : ''
-
-          firstLine.appendChild(nameSpan)
-          firstLine.appendChild(extensionSpan)
-
-          previewInfoArea.appendChild(firstLine)
-
-          // 右侧第二行：文件大小
-          const secondLine = document.createElement('div')
-          secondLine.className = 'preview-second-line'
-
-          const sizeSpan = document.createElement('span')
-          sizeSpan.className = 'preview-size'
-          sizeSpan.textContent = formatFileSize(previewFile.fileSize)
-          secondLine.appendChild(sizeSpan)
-
-          previewInfoArea.appendChild(secondLine)
-
-          previewLayout.appendChild(previewInfoArea)
-          previewElement.appendChild(previewLayout)
-
-          // 在光标位置插入预览
-          range.deleteContents()
-          range.insertNode(previewElement)
-
-          // 移动光标到预览后面
-          range.setStartAfter(previewElement)
-          range.setEndAfter(previewElement)
-          selection.removeAllRanges()
-          selection.addRange(range)
-        }
-        // 更新内容
-        content.value = editorRef.value?.innerText || ''
+        await processFile(file)
       }
     } else if (item.type === 'text/plain') {
       // 粘贴文本
       item.getAsString((text) => {
         insertText(text)
-        // 更新内容
-        content.value = editorRef.value?.innerText || ''
       })
     }
   }
 }
 
-// 处理拖拽相关事件
-const handleDragOver = (e: DragEvent) => {
-  e.preventDefault()
-  e.stopPropagation()
-}
-
-const handleDragLeave = (e: DragEvent) => {
-  e.preventDefault()
-  e.stopPropagation()
-}
-
-// 获取文件类型
-const getFileType = (mimeType: string): FileType => {
-  if (mimeType.startsWith('image/')) return 'image'
-  if (mimeType.startsWith('video/')) return 'video'
-  if (mimeType.startsWith('audio/')) return 'audio'
-  if (mimeType.includes('pdf')) return 'pdf'
-  if (mimeType.includes('word') || mimeType.includes('doc')) return 'word'
-  if (mimeType.includes('excel') || mimeType.includes('sheet')) return 'excel'
-  if (mimeType.includes('powerpoint') || mimeType.includes('presentation')) return 'ppt'
-  if (mimeType.includes('zip') || mimeType.includes('rar')) return 'zip'
-  if (mimeType.includes('text')) return 'txt'
-  return 'file'
-}
-
+// 修改 handleDrop 函数
 const handleDrop = async (e: DragEvent) => {
   e.preventDefault()
   e.stopPropagation()
@@ -301,97 +371,8 @@ const handleDrop = async (e: DragEvent) => {
 
   // 处理拖入的文件
   for (const file of Array.from(files)) {
-    // 如果是图片，调用 handleFile 处理
-    if (file.type.startsWith('image/')) {
-      await handleFile(file)
-    } else {
-      // 其他文件类型，创建并插入文件预览元素
-      const fileId = md5(file.name + file.size + file.lastModified)
-      const previewFile: PreviewFile = {
-        uid: fileId,
-        name: file.name,
-        fileSize: file.size,
-        fileType: getFileType(file.type),
-        showDelIcon: true,
-        file: file
-      }
-
-      // 将文件添加到待发送列表
-      previewFiles.value.push(previewFile)
-
-      // 创建预览元素
-      const previewElement = document.createElement('span')
-      previewElement.className = 'file-preview'
-      previewElement.contentEditable = 'false'
-      previewElement.dataset.fileId = fileId
-
-      // 创建左右布局容器
-      const previewLayout = document.createElement('div')
-      previewLayout.className = 'preview-layout'
-
-      // 创建左侧图标区域
-      const previewIconArea = document.createElement('div')
-      previewIconArea.className = 'preview-icon-area'
-      const icon = document.createElement('i')
-      icon.className = getFileIcon(previewFile.fileType)
-      previewIconArea.appendChild(icon)
-      previewLayout.appendChild(previewIconArea)
-
-      // 创建右侧信息区域
-      const previewInfoArea = document.createElement('div')
-      previewInfoArea.className = 'preview-info-area'
-
-      // 右侧第一行：文件名和扩展名
-      const firstLine = document.createElement('div')
-      firstLine.className = 'preview-first-line'
-
-      const nameSpan = document.createElement('span')
-      nameSpan.className = 'preview-name' // 修改类名
-      // 获取文件名（不含扩展名）和扩展名
-      const fileNameParts = previewFile.name.split('.')
-      const extension = fileNameParts.length > 1 ? fileNameParts.pop() : '' // 确保有扩展名再弹出
-      const name = fileNameParts.join('.')
-      nameSpan.textContent = name // 只显示文件名
-      nameSpan.title = previewFile.name // 添加title用于显示完整文件名
-
-      const extensionSpan = document.createElement('span')
-      extensionSpan.className = 'preview-extension' // 新增类名
-      extensionSpan.textContent = extension ? '.' + extension : '' // 显示点和扩展名
-      extensionSpan.title = extension ? '.' + extension : ''
-
-      firstLine.appendChild(nameSpan)
-      firstLine.appendChild(extensionSpan)
-
-      previewInfoArea.appendChild(firstLine)
-
-      // 右侧第二行：文件大小
-      const secondLine = document.createElement('div')
-      secondLine.className = 'preview-second-line'
-
-      const sizeSpan = document.createElement('span')
-      sizeSpan.className = 'preview-size'
-      sizeSpan.textContent = formatFileSize(previewFile.fileSize)
-      secondLine.appendChild(sizeSpan)
-
-      previewInfoArea.appendChild(secondLine)
-
-      previewLayout.appendChild(previewInfoArea)
-      previewElement.appendChild(previewLayout)
-
-      // 在光标位置插入预览
-      range.deleteContents()
-      range.insertNode(previewElement)
-
-      // 移动光标到预览后面
-      range.setStartAfter(previewElement)
-      range.setEndAfter(previewElement)
-      selection.removeAllRanges()
-      selection.addRange(range)
-    }
+    await processFile(file)
   }
-
-  // 更新内容
-  content.value = editorRef.value?.innerText || ''
 }
 
 // 添加文件大小格式化函数
@@ -422,71 +403,6 @@ const getFileIcon = (type?: FileType) => {
     file: 'vxe-icon-file-txt'
   }
   return iconMap[type || 'file']
-}
-
-const handleFile = async (file: File) => {
-  // 生成文件唯一标识
-  const fileId = md5(file.name + file.size + file.lastModified)
-
-  // 如果是图片，可以预览
-  if (file.type.startsWith('image/')) {
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      const img = document.createElement('img')
-      img.className = 'preview-image'
-
-      // 先设置样式
-      img.style.height = '72px'
-      img.style.width = 'auto'
-      img.style.maxWidth = '100%'
-      img.style.objectFit = 'contain'
-      img.style.display = 'inline-block'
-      img.style.margin = '4px'
-      img.style.borderRadius = '4px'
-
-      // 然后设置图片源
-      img.src = e.target?.result as string
-
-      // 图片加载完成后确保样式生效
-      img.onload = () => {
-        // 获取当前选区
-        const selection = window.getSelection()
-        if (!selection) return
-
-        let range: Range
-        try {
-          range = selection.getRangeAt(0)
-        } catch {
-          // 如果没有选区，创建一个新的选区并定位到末尾
-          range = document.createRange()
-          range.selectNodeContents(editorRef.value!)
-          range.collapse(false)
-          selection.removeAllRanges()
-          selection.addRange(range)
-        }
-
-        // 在光标位置插入图片
-        range.deleteContents()
-        range.insertNode(img)
-        // 移动光标到图片后面
-        range.setStartAfter(img)
-        range.setEndAfter(img)
-        selection.removeAllRanges()
-        selection.addRange(range)
-
-        // 更新内容
-        content.value = editorRef.value?.innerText || ''
-      }
-    }
-    reader.readAsDataURL(file)
-  }
-
-  emit('send', {
-    type: 'file',
-    content: file,
-    fileType: file.type,
-    fileId
-  })
 }
 
 const handleFileSelect = (e: Event) => {
@@ -640,37 +556,96 @@ const handleCtrlEnter = () => {
 }
 
 const handleSend = () => {
-  if (!canSend.value) return
+  if (!editorRef.value) return
 
-  // 发送文本消息
-  if (content.value.trim()) {
-    emit('send', {
-      type: 'text',
-      content: content.value
-    })
+  const nodes = editorRef.value.childNodes
+  let textBuffer = ''
+  const messagesToSend: Array<{
+    type: string
+    content: string | File
+    fileType?: string
+    fileId?: string
+  }> = []
+
+  const emitBufferedText = () => {
+    const trimmedText = textBuffer.trim()
+    if (trimmedText) {
+      messagesToSend.push({
+        type: 'text',
+        content: trimmedText
+      })
+    }
+    textBuffer = '' // Clear buffer after emitting
   }
 
-  // 发送文件消息
-  const fileElements = editorRef.value?.querySelectorAll('.file-preview')
-  fileElements?.forEach(element => {
-    const fileId = element.getAttribute('data-file-id')
-    const file = previewFiles.value.find(f => f.uid === fileId)
-    if (file?.file) {
-      emit('send', {
-        type: 'file',
-        content: file.file,
-        fileType: file.fileType,
-        fileId: String(file.uid)
-      })
+  nodes.forEach(node => {
+    if (node.nodeType === Node.TEXT_NODE) {
+      // 如果是文本节点，添加到文本缓冲区
+      textBuffer += node.textContent || ''
+    } else if (node.nodeType === Node.ELEMENT_NODE) {
+      const element = node as HTMLElement
+      if (element.classList.contains('file-preview') && element.dataset.fileId) {
+        // 如果是文件预览元素
+        emitBufferedText() // 发送之前累积的文本
+
+        const fileId = element.dataset.fileId
+        // 从 previewFiles 中找到对应的 File 对象
+        const previewFile = previewFiles.value.find(f => String(f.uid) === fileId)
+
+        if (previewFile?.file) {
+          // 添加文件消息
+          messagesToSend.push({
+            type: 'file',
+            content: previewFile.file, // 发送原始 File 对象
+            fileType: previewFile.fileType || fileTypeFromFile(previewFile.file), // 优先使用存储的类型，否则从 File 对象获取
+            fileId: String(previewFile.uid)
+          })
+        }
+      } else if (element.classList.contains('preview-image')) {
+        // 如果是图片元素
+        emitBufferedText() // 发送之前累积的文本
+
+        // 从 previewFiles 中找到对应的图片文件
+        const imgSrc = element.getAttribute('src')
+        const previewFile = previewFiles.value.find(f => f.url === imgSrc)
+
+        if (previewFile?.file) {
+          // 添加图片消息
+          messagesToSend.push({
+            type: 'file',
+            content: previewFile.file,
+            fileType: 'image',
+            fileId: String(previewFile.uid)
+          })
+        }
+      }
     }
   })
 
-  // 清空输入框和预览
-  if (editorRef.value) {
-    editorRef.value.innerText = ''
-    content.value = ''
-  }
+  // 发送末尾剩余的文本
+  emitBufferedText()
+
+  // 遍历messagesToSend数组，依次发送消息
+  messagesToSend.forEach(message => {
+    emit('send', message)
+  })
+
+  // 清空输入框和预览列表
+  editorRef.value.innerText = ''
+  content.value = ''
+  // 释放可能存在的图片预览URL
+  previewFiles.value.forEach(file => {
+    if (file.url) {
+      URL.revokeObjectURL(file.url)
+    }
+  })
   previewFiles.value = []
+  lastRange.value = null // 清空保存的光标位置
+}
+
+// 辅助函数：从 File 对象获取文件类型 (如果 previewFile.fileType 不存在)
+const fileTypeFromFile = (file: File): FileType => {
+  return getFileType(file.type)
 }
 
 // 点击外部关闭表情选择器
@@ -702,6 +677,17 @@ onUnmounted(() => {
     }
   })
 })
+
+// 处理拖拽相关事件
+const handleDragOver = (e: DragEvent) => {
+  e.preventDefault()
+  e.stopPropagation()
+}
+
+const handleDragLeave = (e: DragEvent) => {
+  e.preventDefault()
+  e.stopPropagation()
+}
 </script>
 
 <style lang="scss">
@@ -789,7 +775,7 @@ onUnmounted(() => {
   .file-preview {
     display: inline-block;
     margin: 4px;
-    vertical-align: middle;
+    vertical-align: bottom;
     user-select: none;
     background: #f5f5f5;
     border: 1px solid #e0e0e0;
@@ -892,7 +878,7 @@ onUnmounted(() => {
     height: 72px;
     width: auto;
     max-width: 100%;
-    vertical-align: middle;
+    vertical-align: bottom;
   }
 }
 
