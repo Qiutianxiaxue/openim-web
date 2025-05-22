@@ -1,9 +1,13 @@
 <script setup lang="ts">
-import TheWelcome from '../components/TheWelcome.vue'
+import ThemeSwitch from '@/components/ThemeSwitch/index.vue'
+import LanguageSelector from '@/components/language/index.vue'
 </script>
 
 <template>
   <main>
-    <TheWelcome />
+    <h1>Home</h1>
+    <vxe-button>Click me</vxe-button>
+    <ThemeSwitch />
+    <LanguageSelector />
   </main>
 </template>

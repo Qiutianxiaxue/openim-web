@@ -1,8 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import i18n from '../plugins/i18n'
-
-type Language = 'zh-CN' | 'en-US'
+import type { Language } from '@/types/language'
 
 export const useSettingsStore = defineStore(
   'settings',
@@ -11,7 +9,6 @@ export const useSettingsStore = defineStore(
 
     function setLanguage(lang: Language) {
       language.value = lang
-      i18n.global.locale.value = lang
       localStorage.setItem('language', lang)
     }
 

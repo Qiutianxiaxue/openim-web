@@ -1,23 +1,38 @@
 <script setup lang="ts">
 import { useSettingsStore } from '@/stores/settings'
-import { ref } from 'vue'
-import VxeUI from 'vxe-pc-ui'
+import { ref, computed } from 'vue'
+import type { LanguageOption, LanguageOptions, Language } from '@/types/language'
+import VxeUI, { type VxePulldownEvents } from 'vxe-pc-ui'
+
 defineOptions({
   name: 'LanguageSelector'
 })
 
 const settingsStore = useSettingsStore()
-const language = ref(settingsStore.language)
 
-function handleLanguageChange() {
-  settingsStore.setLanguage(language.value)
-  VxeUI.setLanguage(language.value)
+const availableLanguages = ref<LanguageOptions>([
+  { value: 'zh-CN', label: '中文' },
+  { value: 'en-US', label: 'English' }
+])
+
+const currentLanguage = computed(() => {
+  return availableLanguages.value.find(lang => lang.value === settingsStore.language)?.label || '中文'
+})
+
+const handleLanguageChange: VxePulldownEvents.OptionClick = ({ option }) => {
+  const lang = option as LanguageOption
+  settingsStore.setLanguage(lang.value as Language)
+  VxeUI.setLanguage(lang.value as Language)
 }
 </script>
 
 <template>
-  <select v-model="language" @change="handleLanguageChange">
-    <option value="zh-CN">中文</option>
-    <option value="en-US">English</option>
-  </select>
+  <vxe-pulldown :options="availableLanguages" trigger="click" @option-click="handleLanguageChange">
+    <template #default>
+      <vxe-button mode="text" icon="vxe-icon-language-switch">
+        {{ currentLanguage }}
+      </vxe-button>
+    </template>
+  </vxe-pulldown>
 </template>
+<style lang="scss"></style>
