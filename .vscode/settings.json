@@ -23,6 +23,7 @@
   "i18n-ally.preferredDelimiter": ".",
   "i18n-ally.extract.autoDetect": true,
   "i18n-ally.extract.keygenStyle": "nested",
+  "github.workflowValidation": "off",
   "json.schemas": [],
   "json.validate.enable": false
 }

@@ -1,10 +1,10 @@
-import type { App as VueApp } from 'vue'
-import MainApp from './App.vue'
+import type { App } from 'vue'
+import ChatWindow from './components/ChatWindow.vue'
 
-export const OpenIMWeb = {
-  install: (app: VueApp) => {
-    app.component('OpenIMWeb', MainApp)
+export { ChatWindow }
+
+export default {
+  install(app: App) {
+    app.component('ChatWindow', ChatWindow)
   },
 }
-
-export { MainApp }
