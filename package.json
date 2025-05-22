@@ -1,6 +1,6 @@
 {
   "name": "openim-web",
-  "version": "1.0.4",
+  "version": "1.0.7",
   "private": false,
   "type": "module",
   "files": [
@@ -10,12 +10,14 @@
   ],
   "main": "./dist/openim-web.umd.js",
   "module": "./dist/openim-web.es.js",
+  "types": "./dist/types/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/types/index.d.ts",
       "import": "./dist/openim-web.es.js",
       "require": "./dist/openim-web.umd.js"
     },
-    "./dist/style.css": "./dist/style.css"
+    "./dist/style.css": "./dist/openim-web.css"
   },
   "scripts": {
     "dev": "vite",
@@ -42,6 +44,11 @@
     "vue-i18n": "12.0.0-alpha.2",
     "vue-router": "^4.5.0",
     "vxe-pc-ui": "4.6.12"
+  },
+  "peerDependencies": {
+    "vue": "^3.0.0",
+    "vue-router": "^4.0.0",
+    "pinia": "^3.0.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.51.1",

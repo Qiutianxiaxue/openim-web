@@ -1,9 +1,24 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { resolve } from 'path'
+import { mkdir, copyFile } from 'fs/promises'
+import { existsSync } from 'fs'
 
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [
+    vue(),
+    {
+      name: 'copy-types',
+      async buildEnd() {
+        // 复制类型声明文件到 dist 目录
+        const typesDir = resolve(__dirname, 'dist/types')
+        if (!existsSync(typesDir)) {
+          await mkdir(typesDir, { recursive: true })
+        }
+        await copyFile(resolve(__dirname, 'src/types/index.d.ts'), resolve(typesDir, 'index.d.ts'))
+      },
+    },
+  ],
   build: {
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),
@@ -39,7 +54,7 @@ export default defineConfig({
         },
       },
     },
-    cssCodeSplit: true,
+    cssCodeSplit: false,
     minify: 'terser',
     sourcemap: true,
   },
