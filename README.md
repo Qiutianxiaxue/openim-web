@@ -1,160 +1,155 @@
-# openim-web
+# OpenIM Web
 
-这是一个基于Vue 3的即时通讯UI组件库。
+一个基于 Vue 3 的即时通讯组件库，提供简单易用的聊天界面和功能。
 
-## 推荐开发环境
+## 特性
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (并禁用Vetur)。
+- 🚀 基于 Vue 3 + TypeScript
+- 💪 支持明暗主题切换
+- 🌍 支持中英文国际化
+- 📱 响应式设计
+- 🎨 可自定义样式
+- 🔌 完整的事件系统
 
-## TypeScript支持
-
-TypeScript默认无法处理`.vue`文件的类型信息，所以我们使用`vue-tsc`替代`tsc`进行类型检查。在编辑器中，我们需要[Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar)来让TypeScript语言服务识别`.vue`文件的类型。
-
-## 自定义配置
-
-查看[Vite配置参考](https://vite.dev/config/)。
-
-## 项目设置
-
-```sh
-pnpm install
-```
-
-### 开发环境编译和热重载
-
-```sh
-pnpm dev
-```
-
-### 生产环境类型检查、编译和压缩
-
-```sh
-pnpm build
-```
-
-### 使用[Vitest](https://vitest.dev/)运行单元测试
-
-```sh
-pnpm test:unit
-```
-
-### 使用[Playwright](https://playwright.dev)运行端到端测试
-
-```sh
-# 首次运行需要安装浏览器
-npx playwright install
-
-# 在CI环境中测试时，必须先构建项目
-pnpm build
-
-# 运行端到端测试
-pnpm test:e2e
-# 仅在Chromium中运行测试
-pnpm test:e2e --project=chromium
-# 运行特定文件的测试
-pnpm test:e2e tests/example.spec.ts
-# 在调试模式下运行测试
-pnpm test:e2e --debug
-```
-
-### 使用[ESLint](https://eslint.org/)进行代码检查
-
-```sh
-pnpm lint
-```
-
-## 发布到npm
-
-### 手动发布
-
-1. **自动发布（推荐）**
+## 安装
 
 ```bash
-# 自动更新小版本号并发布
-pnpm release
+# npm
+npm install openim-web
+
+# yarn
+yarn add openim-web
+
+# pnpm
+pnpm add openim-web
 ```
 
-这个命令会：
-
-- 自动更新小版本号（patch）
-- 构建项目
-- 发布到 npm
-
-2. **手动发布**
-   如果需要手动控制版本号：
-
-```bash
-# 更新版本号
-npm version patch  # 小版本更新
-npm version minor  # 中版本更新
-npm version major  # 大版本更新
-
-# 构建
-pnpm build
-
-# 发布
-npm publish
-```
-
-注意：
-
-- 使用 `pnpm release` 会自动更新小版本号
-- 如果需要更新中版本或大版本，请使用手动发布方式
-- 发布前请确保所有测试通过
-- 发布前请确保文档已更新
-
-### GITHUB自动发布
-
-1. 更新package.json中的版本号
-
-2. 提交代码
-
-```sh
-git add .
-git commit -m "feat: update version to x.x.x"
-```
-
-3. 创建新的tag
-
-```sh
-git tag v1.0.0  # 版本号要和package.json中的一致
-```
-
-4. 推送代码和tag
-
-```sh
-git push origin main
-git push origin v1.0.0
-```
-
-## 使用方法
+## 快速开始
 
 ### 全局注册
 
 ```typescript
+// main.ts
 import { createApp } from 'vue'
-import { OpenIMWeb } from 'openim-web'
-import 'openim-web/dist/style.css'
 import App from './App.vue'
+import OpenIMWeb from 'openim-web'
+import 'openim-web/dist/style.css'
 
 const app = createApp(App)
 app.use(OpenIMWeb)
 app.mount('#app')
 ```
 
-### 按需引入
+### 组件中使用
 
 ```vue
 <template>
-  <OpenIMWeb />
+  <chat-window
+    api-url="https://api.example.com"
+    ws-url="wss://ws.example.com"
+    token="your-token"
+    user-id="user123"
+    theme="light"
+    language="zh-CN"
+    :width="800"
+    :height="500"
+    @connect="handleConnect"
+    @message="handleMessage"
+  />
 </template>
 
-<script setup>
-import { OpenIMWeb } from 'openim-web'
-import 'openim-web/dist/style.css'
+<script setup lang="ts">
+import { ref } from 'vue'
+import { ChatWindow } from 'openim-web'
+import type { Message } from 'openim-web'
+
+const chatRef = ref()
+
+// 发送消息
+function handleSend() {
+  chatRef.value?.sendMessage('Hello!')
+}
+
+// 处理连接事件
+function handleConnect() {
+  console.log('已连接到聊天服务器')
+}
+
+// 处理消息事件
+function handleMessage(message: Message) {
+  console.log('收到新消息:', message)
+}
 </script>
+```
+
+## Props
+
+| 属性名       | 类型               | 必填 | 默认值  | 说明                 |
+| ------------ | ------------------ | ---- | ------- | -------------------- |
+| apiUrl       | string             | 是   | -       | API 服务器地址       |
+| wsUrl        | string             | 是   | -       | WebSocket 服务器地址 |
+| token        | string             | 是   | -       | 用户认证令牌         |
+| userId       | string             | 是   | -       | 用户ID               |
+| theme        | 'light' \| 'dark'  | 否   | 'light' | 主题                 |
+| language     | 'zh-CN' \| 'en-US' | 否   | 'zh-CN' | 语言                 |
+| avatar       | string             | 否   | -       | 用户头像             |
+| nickname     | string             | 否   | -       | 用户昵称             |
+| width        | string \| number   | 否   | '100%'  | 组件宽度             |
+| height       | string \| number   | 否   | '100%'  | 组件高度             |
+| borderRadius | string \| number   | 否   | '8px'   | 圆角大小             |
+
+## 事件
+
+| 事件名               | 参数                                          | 说明                   |
+| -------------------- | --------------------------------------------- | ---------------------- |
+| connect              | -                                             | 连接成功时触发         |
+| disconnect           | reason: string                                | 断开连接时触发         |
+| error                | error: Error                                  | 发生错误时触发         |
+| message              | message: Message                              | 收到新消息时触发       |
+| message-sent         | message: Message                              | 消息发送成功时触发     |
+| message-received     | message: Message                              | 消息接收成功时触发     |
+| typing               | userId: string                                | 用户正在输入时触发     |
+| online-status-change | userId: string, status: 'online' \| 'offline' | 用户在线状态变更时触发 |
+
+## 方法
+
+| 方法名      | 参数                                | 说明     |
+| ----------- | ----------------------------------- | -------- |
+| sendMessage | content: string, type?: MessageType | 发送消息 |
+
+## 类型定义
+
+```typescript
+type MessageType = 'text' | 'image' | 'file' | 'audio' | 'video' | 'location' | 'custom'
+
+interface Message {
+  id: string
+  type: MessageType
+  content: string
+  senderId: string
+  receiverId: string
+  timestamp: number
+  status: 'sending' | 'sent' | 'delivered' | 'read' | 'failed'
+  metadata?: Record<string, unknown>
+}
+```
+
+## 开发
+
+```bash
+# 安装依赖
+pnpm install
+
+# 启动开发服务器
+pnpm dev
+
+# 构建库
+pnpm build:lib
+
+# 运行测试
+pnpm test:unit
 ```
 
 ## 许可证
 
-MIT
+[MIT](LICENSE)
