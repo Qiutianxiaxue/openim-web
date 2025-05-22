@@ -3,6 +3,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import type { ChatProps, ChatEmits } from '@/types/chat'
 import type { Message } from '@/types/message'
 import MessageInput from "./MessageInput.vue"
+import RecentMessageList from "./RecentMessageList.vue"
 
 const props = withDefaults(defineProps<ChatProps>(), {
   theme: 'light',
@@ -89,7 +90,7 @@ onUnmounted(() => {
   }">
     <vxe-layout-container>
       <vxe-layout-aside :width="250">
-        <div style="height: 400px">菜单</div>
+        <RecentMessageList />
       </vxe-layout-aside>
 
 
