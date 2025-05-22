@@ -115,7 +115,7 @@ onUnmounted(() => {
   </div>
 </template>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .chat-window {
   background-color: var(--vxe-background-color);
   border: 1px solid var(--vxe-border-color);
