@@ -3,18 +3,16 @@
     <div class="input-toolbar">
       <div class="toolbar-left">
         <button class="toolbar-btn" ref="emojiBtnRef" @click.stop="toggleEmojiPicker">
-          <i class="icon-emoji">😊</i>
+          <i class="iconfont icon-biaoqing"></i>
         </button>
         <button class="toolbar-btn" @click.stop="() => triggerFileInput('image')">
-          <i class="icon-image">🖼️</i>
+          <i class="iconfont icon-tupian"></i>
         </button>
         <button class="toolbar-btn" @click.stop="() => triggerFileInput('file')">
-          <i class="icon-file">📎</i>
+          <i class="iconfont icon-wenjianjia"></i>
         </button>
-      </div>
-      <div class="toolbar-right">
-        <button class="send-btn" :disabled="!canSend" @click.stop="handleSend">
-          发送
+        <button class="toolbar-btn" @click.stop="() => triggerChat()">
+          <i class="iconfont icon-xiaoxi"></i>
         </button>
       </div>
     </div>
@@ -24,6 +22,12 @@
         @mouseup="saveLastRange" @keyup="saveLastRange" @paste="handlePaste" @keydown.enter.exact.prevent="handleEnter"
         @keydown.ctrl.enter.exact.prevent="handleCtrlEnter" @dragover.prevent="handleDragOver"
         @dragleave.prevent="handleDragLeave" @drop.prevent="handleDrop"></div>
+    </div>
+
+    <div class="send-area">
+      <button class="send-btn" :disabled="!canSend" @click.stop="handleSend">
+        发送
+      </button>
     </div>
 
     <!-- 表情选择器 -->
@@ -88,7 +92,14 @@ const previewFiles = ref<PreviewFile[]>([])
 
 // 计算属性
 const canSend = computed(() => {
-  return content.value.trim().length > 0
+  // 检查是否有文本内容
+  const hasText = content.value.trim().length > 0
+  // 检查是否有文件预览
+  const hasFiles = previewFiles.value.length > 0
+  // 检查编辑器中是否有图片或文件预览元素
+  const hasPreviewElements = editorRef.value?.querySelector('.preview-image, .file-preview') !== null
+
+  return hasText || hasFiles || hasPreviewElements
 })
 
 // 方法
@@ -418,7 +429,11 @@ const handleFileSelect = (e: Event) => {
 
 const triggerFileInput = (type: 'image' | 'file' = 'image') => {
   if (fileInputRef.value) {
-    fileInputAccept.value = type === 'image' ? 'image/*' : '*/*'
+    // 先清空 input 的值，确保可以重复选择相同文件
+    fileInputRef.value.value = ''
+    // 设置 accept 属性
+    fileInputRef.value.accept = type === 'image' ? 'image/*' : '*/*'
+    // 触发点击
     fileInputRef.value.click()
   }
 }
@@ -454,6 +469,7 @@ const toggleEmojiPicker = () => {
     })
   }
 }
+const triggerChat = () => { }
 
 const lastRange = ref<Range | null>(null)
 
@@ -694,7 +710,6 @@ const handleDragLeave = (e: DragEvent) => {
 .chat-window {
   .message-input {
     position: relative;
-    border: 1px solid #e0e0e0;
     border-radius: 4px;
     background: #fff;
     z-index: 1;
@@ -708,7 +723,6 @@ const handleDragLeave = (e: DragEvent) => {
     justify-content: space-between;
     align-items: center;
     padding: 8px;
-    border-bottom: 1px solid #e0e0e0;
     flex-shrink: 0;
   }
 
@@ -725,23 +739,13 @@ const handleDragLeave = (e: DragEvent) => {
     border-radius: 4px;
     transition: background-color 0.2s;
 
+    i {
+      font-size: 20px;
+      color: #666;
+    }
+
     &:hover {
       background-color: #f5f5f5;
-    }
-  }
-
-  .send-btn {
-    padding: 6px 16px;
-    border: none;
-    border-radius: 4px;
-    background-color: #1890ff;
-    color: white;
-    cursor: pointer;
-    transition: background-color 0.2s;
-
-    &:disabled {
-      background-color: #d9d9d9;
-      cursor: not-allowed;
     }
   }
 
@@ -761,10 +765,40 @@ const handleDragLeave = (e: DragEvent) => {
     min-height: 0;
     white-space: pre-wrap;
     word-break: break-all;
+    font-size: 16px;
+    color: #333;
 
     &:empty:before {
       content: attr(placeholder);
       color: #999;
+      font-size: 16px;
+    }
+  }
+
+  .send-area {
+    padding: 8px 12px;
+    display: flex;
+    justify-content: flex-end;
+    flex-shrink: 0;
+  }
+
+  .send-btn {
+    padding: 8px 24px;
+    border: none;
+    border-radius: 4px;
+    background-color: #1890ff;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-size: 16px;
+
+    &:disabled {
+      background-color: #d9d9d9;
+      cursor: not-allowed;
+    }
+
+    &:hover:not(:disabled) {
+      background-color: #40a9ff;
     }
   }
 
@@ -902,10 +936,12 @@ const handleDragLeave = (e: DragEvent) => {
 
 .emoji-item {
   cursor: pointer;
-  padding: 4px;
+  padding: 8px;
   text-align: center;
   border-radius: 4px;
   transition: background-color 0.2s;
+  font-size: 18px;
+  line-height: 1;
 
   &:hover {
     background-color: #f5f5f5;

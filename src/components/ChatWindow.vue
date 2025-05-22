@@ -99,12 +99,13 @@ onUnmounted(() => {
             <div style="height: 50px">头部</div>
           </vxe-layout-header>
 
-          <vxe-layout-body class="bg3">
-            <vxe-split vertical height="100%" :bar-config="{ height: 2 }">
+          <vxe-layout-body>
+            <vxe-split vertical height="100%" :bar-config="{ height: 2 }"
+              :item-config="{ minHeight: 300, minWidth: 250 }">
               <vxe-split-pane>
                 <div>顶部</div>
               </vxe-split-pane>
-              <vxe-split-pane height="200">
+              <vxe-split-pane height="300">
                 <MessageInput placeholder="请输入消息..." @send="handleMessage" />
               </vxe-split-pane>
             </vxe-split>
