@@ -1,0 +1,8 @@
+{
+  "send": "Send",
+  "inputPlaceholder": "Type a message...",
+  "online": "Online",
+  "offline": "Offline",
+  "typing": "Typing...",
+  "noMessages": "No messages"
+}

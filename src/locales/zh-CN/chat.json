@@ -1,0 +1,8 @@
+{
+  "send": "发送",
+  "inputPlaceholder": "输入消息...",
+  "online": "在线",
+  "offline": "离线",
+  "typing": "正在输入...",
+  "noMessages": "暂无消息"
+}
