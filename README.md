@@ -24,79 +24,83 @@ yarn add openim-web
 pnpm add openim-web
 ```
 
-## 快速开始
+## 使用
 
-### 全局注册
+### 基础配置
+
+在使用组件之前，需要先配置必要的依赖：
 
 ```typescript
 // main.ts
 import { createApp } from 'vue'
+import { createPinia } from 'pinia'
+import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import App from './App.vue'
 import OpenIMWeb from 'openim-web'
 import 'openim-web/dist/style.css'
 
 const app = createApp(App)
+
+// 配置 Pinia
+const pinia = createPinia()
+pinia.use(piniaPluginPersistedstate)
+app.use(pinia)
+
+// 注册组件库
 app.use(OpenIMWeb)
 app.mount('#app')
 ```
 
-### 组件中使用
+### 使用组件
 
 ```vue
 <template>
-  <chat-window
-    api-url="https://api.example.com"
-    ws-url="wss://ws.example.com"
-    token="your-token"
-    user-id="user123"
-    theme="light"
-    language="zh-CN"
-    :width="800"
-    :height="500"
-    @connect="handleConnect"
-    @message="handleMessage"
-  />
+  <ChatWindow api-url="https://api.example.com" ws-url="wss://ws.example.com" token="your-token" />
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
 import { ChatWindow } from 'openim-web'
-import type { Message } from 'openim-web'
-
-const chatRef = ref()
-
-// 发送消息
-function handleSend() {
-  chatRef.value?.sendMessage('Hello!')
-}
-
-// 处理连接事件
-function handleConnect() {
-  console.log('已连接到聊天服务器')
-}
-
-// 处理消息事件
-function handleMessage(message: Message) {
-  console.log('收到新消息:', message)
-}
 </script>
 ```
 
-## Props
+## 依赖说明
 
-| 属性名       | 类型               | 必填 | 默认值  | 说明                 |
-| ------------ | ------------------ | ---- | ------- | -------------------- |
-| apiUrl       | string             | 是   | -       | API 服务器地址       |
-| wsUrl        | string             | 是   | -       | WebSocket 服务器地址 |
-| token        | string             | 是   | -       | 用户认证令牌         |
-| userId       | string             | 是   | -       | 用户ID               |
-| theme        | 'light' \| 'dark'  | 否   | 'light' | 主题                 |
-| language     | 'zh-CN' \| 'en-US' | 否   | 'zh-CN' | 语言                 |
-| avatar       | string             | 否   | -       | 用户头像             |
-| nickname     | string             | 否   | -       | 用户昵称             |
-| width        | string \| number   | 否   | '100%'  | 组件宽度             |
-| height       | string \| number   | 否   | '100%'  | 组件高度             |
-| borderRadius | string \| number   | 否   | '8px'   | 圆角大小             |
+本库需要以下依赖：
+
+```json
+{
+  "dependencies": {
+    "vue": "^3.0.0",
+    "pinia": "^2.0.0",
+    "pinia-plugin-persistedstate": "^4.0.0"
+  }
+}
+```
+
+### 重要说明
+
+1. Pinia 配置
+
+   - 必须在使用组件库之前配置 Pinia
+   - 必须安装并配置 `pinia-plugin-persistedstate`
+   - 建议在使用组件库之前注册 Pinia，以避免状态管理冲突
+
+2. 样式文件
+
+   - 必须引入 `openim-web/dist/style.css`
+   - 确保样式文件在组件之前引入
+
+3. 主题配置
+   - 组件库支持亮色/暗色主题
+   - 可以通过 Pinia store 控制主题切换
+
+## 组件 Props
+
+| 属性名  | 类型   | 必填 | 说明            |
+| ------- | ------ | ---- | --------------- |
+| api-url | string | 是   | OpenIM API 地址 |
+| ws-url  | string | 是   | WebSocket 地址  |
+| token   | string | 是   | 用户认证令牌    |
 
 ## 事件
 

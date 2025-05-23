@@ -7,12 +7,10 @@ import 'vxe-pc-ui/lib/style.css'
 import VxeZhCN from 'vxe-pc-ui/lib/language/zh-CN' // 中文(简体)
 import VxeEnUS from 'vxe-pc-ui/lib/language/en-US' // 英文(美国)
 import inputListener from './directives/inputListener'
-import { createPinia } from 'pinia'
-import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import i18n from './plugins/i18n'
 import { useThemeStore } from './stores/theme'
 
-export { ChatWindow, inputListener }
+export { ChatWindow, inputListener, useThemeStore }
 
 export const setupVXE = (app: App) => {
   // 初始化 VXE-UI 多语言
@@ -24,13 +22,6 @@ export const setupVXE = (app: App) => {
 }
 
 export const setupDependencies = (app: App) => {
-  // 检查是否已经注册了 pinia
-  if (!app._context.provides.pinia) {
-    const pinia = createPinia()
-    pinia.use(piniaPluginPersistedstate)
-    app.use(pinia)
-  }
-
   app.use(i18n)
 
   // 初始化主题
