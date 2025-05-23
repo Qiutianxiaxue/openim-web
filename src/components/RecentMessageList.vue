@@ -6,8 +6,8 @@
           <vxe-layout-body>
             <vxe-input v-model="searchKeyword" placeholder="搜索" type="search" clearable></vxe-input>
           </vxe-layout-body>
-          <vxe-layout-aside :width="40" class="centered-aside">
-            <vxe-button circle icon="vxe-icon-add" @click="handleNewChat"></vxe-button>
+          <vxe-layout-aside :width="45" class="centered-aside">
+            <vxe-button icon="vxe-icon-add" @click="handleNewChat"></vxe-button>
           </vxe-layout-aside>
         </vxe-layout-container>
       </div>

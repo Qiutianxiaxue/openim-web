@@ -1,6 +1,6 @@
 import type { App } from 'vue'
 import ChatWindow from './components/ChatWindow.vue'
-import './assets/main.css'
+import './assets/main.scss'
 
 export { ChatWindow }
 

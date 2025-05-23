@@ -1,10 +1,10 @@
 @font-face {
-  font-family: "iconfont"; /* Project id  */
-  src: url('iconfont.ttf?t=1747911577365') format('truetype');
+  font-family: 'iconfont'; /* Project id  */
+  src: url('@/assets/font/iconfont.ttf?t=1747911577365') format('truetype');
 }
 
 .iconfont {
-  font-family: "iconfont" !important;
+  font-family: 'iconfont' !important;
   font-size: 16px;
   font-style: normal;
   -webkit-font-smoothing: antialiased;
@@ -12,22 +12,21 @@
 }
 
 .icon-biaoqing:before {
-  content: "\e681";
+  content: '\e681';
 }
 
 .icon-tupian:before {
-  content: "\e63b";
+  content: '\e63b';
 }
 
 .icon-wenjianjia:before {
-  content: "\e63c";
+  content: '\e63c';
 }
 
 .icon-shezhi:before {
-  content: "\e682";
+  content: '\e682';
 }
 
 .icon-xiaoxi:before {
-  content: "\e6e5";
+  content: '\e6e5';
 }
-

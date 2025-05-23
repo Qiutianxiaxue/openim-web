@@ -1,0 +1,30 @@
+@use './base.scss';
+@use './font/iconfont.scss';
+
+#app,
+body,
+html {
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  font-size: 14px;
+}
+
+// html[data-vxe-ui-theme='light'] {
+//   --vxe-ui-font-color: #606266;
+//   --vxe-ui-font-primary-color: #b214e7;
+
+//   --vxe-ui-font-primary-tinge-color: #d4d5d7;
+//   --vxe-ui-font-primary-lighten-color: #797b80;
+//   --vxe-ui-font-primary-darken-color: #47494c;
+//   --vxe-ui-font-primary-disabled-color: #bfbfbf;
+// }
+// html[data-vxe-ui-theme='dark'] {
+//   --vxe-ui-font-color: #a0a3a7;
+//   --vxe-ui-font-primary-color: #f31c8f;
+
+//   --vxe-ui-font-primary-tinge-color: #33353b;
+//   --vxe-ui-font-primary-lighten-color: #797b80;
+//   --vxe-ui-font-primary-darken-color: #47494c;
+//   --vxe-ui-font-primary-disabled-color: #464646;
+// }
