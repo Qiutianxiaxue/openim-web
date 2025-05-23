@@ -90,7 +90,7 @@ onUnmounted(() => {
     borderRadius: typeof borderRadius === 'number' ? `${borderRadius}px` : borderRadius
   }">
     <vxe-layout-container>
-      <vxe-layout-aside :width="250">
+      <vxe-layout-aside :width="288">
         <RecentMessageList />
       </vxe-layout-aside>
       <vxe-layout-body>
