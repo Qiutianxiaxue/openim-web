@@ -3,10 +3,12 @@ import vue from '@vitejs/plugin-vue'
 import { resolve } from 'path'
 import { mkdir, copyFile } from 'fs/promises'
 import { existsSync } from 'fs'
+import UnoCSS from 'unocss/vite'
 
 export default defineConfig({
   plugins: [
     vue(),
+    UnoCSS(),
     {
       name: 'copy-types',
       async buildEnd() {
@@ -35,6 +37,7 @@ export default defineConfig({
         'pinia-plugin-persistedstate',
         'vue-i18n',
         'vxe-pc-ui',
+        'unocss',
       ],
       output: {
         exports: 'named',
@@ -47,6 +50,7 @@ export default defineConfig({
           'pinia-plugin-persistedstate': 'piniaPluginPersistedstate',
           'vue-i18n': 'VueI18n',
           'vxe-pc-ui': 'VxeUI',
+          unocss: 'UnoCSS',
         },
         assetFileNames: (assetInfo) => {
           if (assetInfo.name === 'style.css') return 'openim-web.css'
