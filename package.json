@@ -1,6 +1,6 @@
 {
   "name": "openim-web",
-  "version": "1.0.9",
+  "version": "1.0.13",
   "private": false,
   "type": "module",
   "files": [
@@ -46,9 +46,7 @@
     "vxe-pc-ui": "4.6.12"
   },
   "peerDependencies": {
-    "pinia": "^3.0.0",
-    "vue": "^3.0.0",
-    "vue-router": "^4.0.0"
+    "vue": "^3.0.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.51.1",
