@@ -4,7 +4,6 @@ import type { ChatProps, ChatEmits } from '@/types/chat'
 import type { Message } from '@/types/message'
 import MessageInput from "./MessageInput.vue"
 import RecentMessageList from "./RecentMessageList.vue"
-import ThemeSwitch from "./ThemeSwitch/index.vue"
 import ChatRoom from './ChatRoom.vue'
 
 const props = withDefaults(defineProps<ChatProps>(), {

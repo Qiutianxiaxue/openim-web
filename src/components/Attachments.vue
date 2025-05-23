@@ -42,13 +42,6 @@ const fileInputRef = ref<HTMLInputElement | null>(null)
 const isDragover = ref(false)
 const imageError = ref(false)
 
-// 判断是否为图片
-const isImage = (item: AttachmentItem) => {
-  return item.fileType === 'image' ||
-    (item.url && /\.(jpg|jpeg|png|gif|webp)$/i.test(item.url)) ||
-    (item.thumbUrl && /\.(jpg|jpeg|png|gif|webp)$/i.test(item.thumbUrl))
-}
-
 // 获取文件图标
 const getFileIcon = (type?: FileType) => {
   const iconMap: Record<FileType, string> = {
@@ -137,14 +130,6 @@ const handleFiles = (files: FileList) => {
     emit('upload', files)
   }
 }
-
-// 预览图片
-const previewImage = (item: AttachmentItem) => {
-  if (isImage(item)) {
-    emit('preview', item)
-  }
-}
-
 // 处理删除
 const handleDelete = (item: AttachmentItem, index: number) => {
   emit('delete', item, index)

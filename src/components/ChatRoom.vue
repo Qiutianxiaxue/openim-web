@@ -31,7 +31,7 @@ import ChatMessage from './ChatMessage.vue'
 import type { FileType } from '@/types/FileType'
 import dayjs from 'dayjs'
 
-interface ChatMessage {
+interface ChatMessageType {
   id: string | number
   type: 'text' | 'file'
   content?: string
@@ -44,6 +44,7 @@ interface ChatMessage {
   avatar: string
   name: string
   time: number
+  useRead: number
   isSelf: boolean
 }
 
@@ -52,7 +53,7 @@ const { title } = defineProps<{
 }>()
 
 const chatBodyRef = ref<HTMLElement | null>(null)
-const messages = ref<ChatMessage[]>([])
+const messages = ref<ChatMessageType[]>([])
 const loading = ref(false)
 const hasNewMessage = ref(false)
 const isAtBottom = ref(true)
@@ -75,7 +76,7 @@ const loadHistoryMessages = async () => {
     await new Promise(resolve => setTimeout(resolve, 1000))
 
     // 模拟历史消息数据
-    const newMessages: ChatMessage[] = Array.from({ length: 20 }, (_, index) => ({
+    const newMessages: ChatMessageType[] = Array.from({ length: 20 }, (_, index) => ({
       id: `history-${index}`,
       type: Math.random() > 0.5 ? 'text' : 'file',
       content: `消息 ${index}`,
@@ -117,20 +118,21 @@ const loadNewMessages = async () => {
   await new Promise(resolve => setTimeout(resolve, 1000))
 
   // 模拟新消息数据
-  const times = dayjs().valueOf()
-  const newMessages: ChatMessage[] = [{
-    id: `history-${times}`,
+  const index = dayjs().valueOf()
+  const newMessages: ChatMessageType[] = [{
+    id: `history-${index}`,
     type: Math.random() > 0.5 ? 'text' : 'file',
-    content: `消息消息消息消息消息消息消息消息消息\n消息消息消息消息消息消息消息消息消息${times}`,
-    fileId: Math.random() > 0.5 ? `file-${times}` : undefined,
-    fileName: Math.random() > 0.5 ? `文件${times}.jpg` : undefined,
-    fileSize: Math.random() > 0.5 ? 1024 * 1024 : undefined,
-    fileType: Math.random() > 0.5 ? 'image' : undefined,
-    fileUrl: Math.random() > 0.5 ? `https://picsum.photos/200/300?random=${times}` : undefined,
-    avatar: `https://picsum.photos/40/40?random=1`,
-    name: `用户${times}`,
+    content: `消息 ${index}`,
+    fileId: `file-${index}`,
+    fileName: Math.random() > 0.5 ? `文件csum.photos/400/300?${index}.jpg` : `文件${index}.jpg`,
+    fileSize: Math.random() > 0.5 ? 1024 * 1024 : 1024 * 1024,
+    fileType: Math.random() > 0.5 ? 'image' : 'pdf',
+    fileUrl: `https://picsum.photos/400/300?random=${index}`,
+    avatar: `https://picsum.photos/40/40?random=${index}`,
+    name: `用户${index}`,
     time: Date.now(),
-    isSelf: Math.random() > 0.5
+    isSelf: Math.random() > 0.5,
+    useRead: Math.random() > 0.5 ? 1 : 0
   }]
 
   // 将新消息添加到列表末尾
@@ -218,7 +220,7 @@ onMounted(async () => {
   chatBodyRef.value?.addEventListener('scroll', handleScrollWithDebounce)
 
   // 定时加载新消息
-  // setInterval(loadNewMessages, 3000)
+  setInterval(loadNewMessages, 10000)
 })
 
 // 清理
