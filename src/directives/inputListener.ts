@@ -12,10 +12,16 @@ const inputListener: Directive = {
 
     // 键盘事件监听
     const handleKeydown = (event: KeyboardEvent) => {
-      console.log('全局按键事件触发:', event.key) // 添加调试日志
+      console.log('全局按键事件触发:', event.ctrlKey, event.key)
 
       // 忽略输入框中的按键事件
-      if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
+      if (
+        event.target instanceof HTMLInputElement ||
+        event.target instanceof HTMLTextAreaElement ||
+        (event.target instanceof HTMLElement &&
+          (event.target.closest('.message-input') || // 排除消息输入框
+            event.target.closest('[contenteditable="true"]'))) // 排除所有可编辑元素
+      ) {
         return
       }
 
@@ -25,7 +31,13 @@ const inputListener: Directive = {
 
     const handleKeyup = (event: KeyboardEvent) => {
       // 忽略输入框中的按键事件
-      if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
+      if (
+        event.target instanceof HTMLInputElement ||
+        event.target instanceof HTMLTextAreaElement ||
+        (event.target instanceof HTMLElement &&
+          (event.target.closest('.message-input') || // 排除消息输入框
+            event.target.closest('[contenteditable="true"]'))) // 排除所有可编辑元素
+      ) {
         return
       }
       options.onKeyup?.(event)
@@ -33,7 +45,13 @@ const inputListener: Directive = {
 
     const handleKeypress = (event: KeyboardEvent) => {
       // 忽略输入框中的按键事件
-      if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
+      if (
+        event.target instanceof HTMLInputElement ||
+        event.target instanceof HTMLTextAreaElement ||
+        (event.target instanceof HTMLElement &&
+          (event.target.closest('.message-input') || // 排除消息输入框
+            event.target.closest('[contenteditable="true"]'))) // 排除所有可编辑元素
+      ) {
         return
       }
       options.onKeypress?.(event)
