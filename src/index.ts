@@ -24,10 +24,12 @@ export const setupVXE = (app: App) => {
 }
 
 export const setupDependencies = (app: App) => {
-  // 创建并注册 pinia
-  const pinia = createPinia()
-  pinia.use(piniaPluginPersistedstate)
-  app.use(pinia)
+  // 检查是否已经注册了 pinia
+  if (!app._context.provides.pinia) {
+    const pinia = createPinia()
+    pinia.use(piniaPluginPersistedstate)
+    app.use(pinia)
+  }
 
   app.use(i18n)
 
