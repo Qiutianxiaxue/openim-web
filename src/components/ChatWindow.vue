@@ -5,6 +5,7 @@ import type { Message } from '@/types/message'
 import MessageInput from "./MessageInput.vue"
 import RecentMessageList from "./RecentMessageList.vue"
 import ThemeSwitch from "./ThemeSwitch/index.vue"
+import ChatRoom from './ChatRoom.vue'
 
 const props = withDefaults(defineProps<ChatProps>(), {
   theme: 'light',
@@ -93,28 +94,15 @@ onUnmounted(() => {
       <vxe-layout-aside :width="250">
         <RecentMessageList />
       </vxe-layout-aside>
-
-
       <vxe-layout-body>
-        <vxe-layout-container vertical>
-          <vxe-layout-header class="bg1">
-            <div style="height: 50px">头部</div>
-          </vxe-layout-header>
-
-          <vxe-layout-body>
-            <vxe-split vertical height="100%" :bar-config="{ height: 1 }"
-              :item-config="{ minHeight: 300, minWidth: 250 }">
-              <vxe-split-pane>
-                <div>
-                  <ThemeSwitch></ThemeSwitch>
-                </div>
-              </vxe-split-pane>
-              <vxe-split-pane height="300">
-                <MessageInput placeholder="请输入消息..." @send="handleMessage" />
-              </vxe-split-pane>
-            </vxe-split>
-          </vxe-layout-body>
-        </vxe-layout-container>
+        <vxe-split vertical height="100%" :bar-config="{ height: 1 }" :item-config="{ minHeight: 300, minWidth: 250 }">
+          <vxe-split-pane>
+            <ChatRoom title="聊天窗口" />
+          </vxe-split-pane>
+          <vxe-split-pane height="300">
+            <MessageInput placeholder="请输入消息..." @send="handleMessage" />
+          </vxe-split-pane>
+        </vxe-split>
       </vxe-layout-body>
     </vxe-layout-container>
   </div>

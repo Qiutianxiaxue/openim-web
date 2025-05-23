@@ -819,13 +819,12 @@ const handleDragLeave = (e: DragEvent) => {
     margin: 4px;
     vertical-align: bottom;
     user-select: none;
-    background: var(--vxe-ui-font-tinge-color);
-    border: 1px solid var(--vxe-ui-font-tinge-color);
+    background: var(--vxe-ui-layout-background-color);
     border-radius: 4px;
     padding: 8px;
     pointer-events: none;
-    height: 72px;
-    width: 230px;
+    height: 80px;
+    width: 300px;
     overflow: hidden;
 
     &.is-image {

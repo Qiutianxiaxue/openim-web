@@ -40,6 +40,7 @@ const emit = defineEmits<{
 
 const fileInputRef = ref<HTMLInputElement | null>(null)
 const isDragover = ref(false)
+const imageError = ref(false)
 
 // 判断是否为图片
 const isImage = (item: AttachmentItem) => {
@@ -51,16 +52,16 @@ const isImage = (item: AttachmentItem) => {
 // 获取文件图标
 const getFileIcon = (type?: FileType) => {
   const iconMap: Record<FileType, string> = {
-    word: 'el-icon-document',
-    excel: 'el-icon-document',
-    ppt: 'el-icon-document',
-    pdf: 'el-icon-document',
-    txt: 'el-icon-document',
-    image: 'el-icon-picture',
-    audio: 'el-icon-headset',
-    video: 'el-icon-video-camera',
-    zip: 'el-icon-folder',
-    file: 'el-icon-document'
+    word: 'vxe-icon-file-word',
+    excel: 'vxe-icon-file-excel',
+    ppt: 'vxe-icon-file-ppt',
+    pdf: 'vxe-icon-file-pdf',
+    txt: 'vxe-icon-file-txt',
+    image: 'vxe-icon-file-image',
+    audio: 'vxe-icon-file-txt',
+    video: 'vxe-icon-square-caret-right',
+    zip: 'vxe-icon-file-zip',
+    file: 'vxe-icon-file-txt'
   }
   return iconMap[type || 'file']
 }
@@ -76,6 +77,18 @@ const formatFileSize = (size: number) => {
   } else {
     return (size / (1024 * 1024 * 1024)).toFixed(2) + 'GB'
   }
+}
+
+// 获取文件名（不含扩展名）
+const getFileNameWithoutExt = (name: string) => {
+  const parts = name.split('.')
+  return parts.length > 1 ? parts.slice(0, -1).join('.') : name
+}
+
+// 获取文件扩展名
+const getFileExtension = (name: string) => {
+  const parts = name.split('.')
+  return parts.length > 1 ? '.' + parts.pop() : ''
 }
 
 // 触发文件选择
@@ -136,6 +149,14 @@ const previewImage = (item: AttachmentItem) => {
 const handleDelete = (item: AttachmentItem, index: number) => {
   emit('delete', item, index)
 }
+
+const handlePreview = (file: AttachmentItem) => {
+  emit('preview', file)
+}
+
+const handleImageError = () => {
+  imageError.value = true
+}
 </script>
 
 <template>
@@ -143,20 +164,44 @@ const handleDelete = (item: AttachmentItem, index: number) => {
     @drop.prevent="handleDrop" :class="{ 'is-dragover': isDragover }">
     <div class="attachments-list" :class="props.overflow">
       <div v-for="(item, index) in props.items" :key="item.uid" class="attachment-item">
-        <div class="attachment-card">
-          <!-- 图片预览 -->
-          <div v-if="isImage(item)" class="attachment-preview" @click="previewImage(item)">
-            <img :src="item.url || item.thumbUrl" :alt="item.name" />
+        <div class="attachment-card" @click="handlePreview(item)">
+          <!-- 图片类型 -->
+          <div v-if="item.fileType === 'image'" class="attachment-preview image-preview">
+            <vxe-image :src="item.url || item.thumbUrl" :height="200" loading="lazy"></vxe-image>
           </div>
-          <!-- 文件图标 -->
-          <div v-else class="attachment-icon">
-            <i :class="getFileIcon(item.fileType)"></i>
+          <!-- 视频类型 -->
+          <div v-else-if="item.fileType === 'video'" class="attachment-preview video-preview">
+            <img :src="item.thumbUrl" :alt="item.name" @error="handleImageError" />
+            <div v-if="imageError" class="image-placeholder">
+              <i class="el-icon-video-camera"></i>
+            </div>
+            <div class="video-play-icon">
+              <i class="el-icon-video-play"></i>
+            </div>
           </div>
-          <!-- 文件信息 -->
-          <div class="attachment-info">
-            <div class="attachment-name" :title="item.name">{{ item.name }}</div>
-            <div class="attachment-size">{{ formatFileSize(item.fileSize) }}</div>
+          <!-- 其他类型文件 -->
+          <div v-else class="attachment-preview file-preview">
+            <div class="preview-layout">
+              <div class="preview-icon-area">
+                <i :class="getFileIcon(item.fileType)"></i>
+              </div>
+              <div class="preview-info-area">
+                <div class="preview-first-line">
+                  <span class="preview-name" :title="item.name">{{ getFileNameWithoutExt(item.name) }}</span>
+                  <span class="preview-extension">{{ getFileExtension(item.name) }}</span>
+                </div>
+                <div class="preview-second-line">
+                  <span class="preview-size">{{ formatFileSize(item.fileSize) }}</span>
+                </div>
+              </div>
+            </div>
+            <!-- 文件信息 -->
+            <div class="attachment-info">
+              <div class="attachment-name" :title="item.name">{{ item.name }}</div>
+              <div class="attachment-size">{{ formatFileSize(item.fileSize) }}</div>
+            </div>
           </div>
+
           <!-- 上传进度 -->
           <div v-if="item.uploading" class="attachment-progress">
             <div class="progress-bar">
@@ -184,29 +229,15 @@ const handleDelete = (item: AttachmentItem, index: number) => {
 </template>
 
 
-<style scoped>
+<style scoped lang="scss">
 .attachments {
   width: 100%;
   position: relative;
 }
 
-.attachments.is-dragover::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(64, 158, 255, 0.1);
-  border: 2px dashed #409eff;
-  border-radius: 4px;
-  z-index: 1;
-}
-
 .attachments-list {
   display: flex;
   gap: 8px;
-  padding: 8px;
 }
 
 .attachments-list.scrollX {
@@ -231,29 +262,27 @@ const handleDelete = (item: AttachmentItem, index: number) => {
 
 .attachment-card {
   position: relative;
-  width: 120px;
-  height: 120px;
-  border: 1px solid #e0e0e0;
   border-radius: 4px;
   overflow: hidden;
-  background: #fff;
+  background: var(--vxe-ui-layout-background-color);
   transition: all 0.3s;
 }
 
 .attachment-card:hover {
-  border-color: #409eff;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
 }
 
 .attachment-preview {
-  width: 100%;
-  height: 80px;
   overflow: hidden;
+
+  &.image-preview {
+    height: 200px;
+  }
 }
 
 .attachment-preview img {
-  width: 100%;
-  height: 100%;
+  width: auto;
+  height: 200px;
   object-fit: cover;
 }
 
@@ -366,5 +395,104 @@ const handleDelete = (item: AttachmentItem, index: number) => {
   font-size: 12px;
   color: #909399;
   margin-top: 4px;
+}
+
+.video-play-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 32px;
+  height: 32px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+
+.image-placeholder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--vxe-ui-modal-header-background-color);
+  color: var(--vxe-ui-font-color-secondary);
+
+  i {
+    font-size: 24px;
+  }
+}
+
+.file-preview {
+  width: 240px;
+  height: 66px;
+  padding: 4px;
+  background: var(--vxe-ui-layout-background-color);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.preview-layout {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.preview-icon-area {
+  width: 56px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-right: 8px;
+
+  i {
+    font-size: 42px;
+    color: #909399;
+  }
+}
+
+.preview-info-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+  overflow: hidden;
+}
+
+.preview-first-line {
+  display: flex;
+  align-items: baseline;
+}
+
+.preview-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-right: 4px;
+  font-size: 14px;
+  color: var(--vxe-ui-font-color);
+}
+
+.preview-extension {
+  flex-shrink: 0;
+  white-space: nowrap;
+  font-size: 14px;
+  color: var(--vxe-ui-font-color);
+}
+
+.preview-second-line {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #909399;
 }
 </style>

@@ -61,7 +61,7 @@ const generateDummyChatList = (count: number): ChatItem[] => {
     list.push({
       id: i,
       name: `用户 ${i}`,
-      avatar: `https://vxeui.com/logo.png`,
+      avatar: `https://picsum.photos/40/40?random=${i}`,
       lastMessage: `这是用户 ${i} 的最后一条消息。`,
       time: `今天 ${Math.floor(Math.random() * 24).toString().padStart(2, '0')}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')}`,
     })

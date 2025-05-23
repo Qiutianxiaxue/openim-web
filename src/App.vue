@@ -8,7 +8,7 @@ const handleInput = (text: string) => {
 </script>
 
 <template>
-  <GlobalInputListener :show-input-box="false" @input="handleInput" />
+  <GlobalInputListener :show-input-box="true" @input="handleInput" />
   <RouterView />
 </template>
 
