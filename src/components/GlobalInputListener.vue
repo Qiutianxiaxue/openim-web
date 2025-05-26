@@ -63,7 +63,7 @@ const handleKeydown = async (event: KeyboardEvent) => {
   // 检查是否有修饰键
   const hasModifiers = event.ctrlKey || event.altKey || event.metaKey
 
-  if (!hasModifiers) {
+  if (!hasModifiers && event.key.length === 1) { // 只处理可打印字符
     // 如果没有修饰键，开始输入模式
     isTyping.value = true
     inputText.value = '' // 清空输入框
