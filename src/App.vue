@@ -13,7 +13,7 @@ onMounted(async () => {
     await wsService.connect('ws://10.0.2.219:38081', {
       'client-type': 'EnterpriseCenterWEB',
       Appid: '1001',
-      ClientId: '1001112',
+      ClientId: '1001',
       Timestamp: '1739166426',
       Authorization: 'Bearer QC0bb5fa88eba0f98635389a7'
     })
