@@ -1,3 +1,4 @@
+import dayjs from 'dayjs'
 import { OpenIMWebSocket } from 'openim-websocket'
 import type { WebSocketMessage } from 'openim-websocket'
 import { VxeUI } from 'vxe-pc-ui'
@@ -6,7 +7,7 @@ class WebSocketService {
   private static instance: WebSocketService
   private ws: OpenIMWebSocket | null = null
   private messageHandlers: ((message: WebSocketMessage) => void)[] = []
-  private openHandlers: (() => void)[] = []
+  private openHandlers: ((message: WebSocketMessage) => void)[] = []
 
   private constructor() {}
 
@@ -22,19 +23,27 @@ class WebSocketService {
       this.ws = new OpenIMWebSocket({
         url,
         headers,
+        enableLogging: true,
         reconnectInterval: 3000,
         maxReconnectAttempts: 5,
       })
-      this.ws.on('open', () => {
+      this.ws.on('open', () => {})
+      this.ws.on('message', (data) => {
+        this.messageHandlers.forEach((handler) => handler(data))
+      })
+      this.ws.on('connected', (data) => {
         VxeUI.modal.close('websocketlinkstatus')
         VxeUI.modal.message({
           content: `消息服务已连接`,
           status: 'success',
         })
-        this.openHandlers.forEach((handler) => handler())
+        this.openHandlers.forEach((handler) => handler(data))
       })
-      this.ws.on('message', (data) => {
-        this.messageHandlers.forEach((handler) => handler(data))
+      this.ws.on('connect_error', (data) => {
+        console.error('WebSocket 连接错误', data)
+      })
+      this.ws.on('force_offline', (data) => {
+        console.error('WebSocket 强制下线', data)
       })
 
       this.ws.on('error', (error) => {
@@ -84,10 +93,22 @@ class WebSocketService {
       this.ws.subscribe(topic)
     }
   }
+  public unsubscribe(topic: string): void {
+    if (this.ws) {
+      this.ws.unsubscribe(topic)
+    }
+  }
 
   public send(data: WebSocketMessage): void {
     if (this.ws) {
       this.ws.send(data)
+    } else {
+      console.error('WebSocket 未连接，无法发送消息')
+    }
+  }
+  public sendService(api: string, data: Record<string, unknown>): void {
+    if (this.ws) {
+      this.ws.send({ type: 'service', service: api, data: data, client_time: dayjs().valueOf() })
     } else {
       console.error('WebSocket 未连接，无法发送消息')
     }

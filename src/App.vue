@@ -20,10 +20,13 @@ onMounted(async () => {
 
     // 订阅主题
     wsService.open(() => {
-      console.log('WebSocket 连接已打开11111111111111')
+      console.log('WebSocket 连接成功')
       setTimeout(() => {
         wsService.subscribe('test/#')
         wsService.subscribe('message/#')
+        wsService.sendService('User/getUserClients', {
+          userId: 'entprise_admin',
+        })
       }, 1000)
     })
     // 监听消息
