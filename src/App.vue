@@ -10,17 +10,22 @@ const handleInput = (text: string) => {
 
 onMounted(async () => {
   try {
-    await wsService.connect('ws://10.0.2.219:38081', {
+    wsService.connect('ws://127.0.0.1:38081', {
       'client-type': 'EnterpriseCenterWEB',
       Appid: '1001',
-      ClientId: '1001',
+      ClientId: '1021312301',
       Timestamp: '1739166426',
-      Authorization: 'Bearer QC0bb5fa88eba0f98635389a7'
+      Authorization: 'Bearer QC5586bdd29fbc86b3a39df6b',
     })
 
     // 订阅主题
-    wsService.subscribe('test/#')
-
+    wsService.open(() => {
+      console.log('WebSocket 连接已打开11111111111111')
+      setTimeout(() => {
+        wsService.subscribe('test/#')
+        wsService.subscribe('message/#')
+      }, 1000)
+    })
     // 监听消息
     wsService.onMessage((data) => {
       console.log('收到消息:', data)

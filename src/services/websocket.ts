@@ -6,6 +6,7 @@ class WebSocketService {
   private static instance: WebSocketService
   private ws: OpenIMWebSocket | null = null
   private messageHandlers: ((message: WebSocketMessage) => void)[] = []
+  private openHandlers: (() => void)[] = []
 
   private constructor() {}
 
@@ -25,12 +26,12 @@ class WebSocketService {
         maxReconnectAttempts: 5,
       })
       this.ws.on('open', () => {
-        console.log('open')
+        VxeUI.modal.close('websocketlinkstatus')
         VxeUI.modal.message({
           content: `消息服务已连接`,
           status: 'success',
         })
-        VxeUI.modal.close('websocketlinkstatus')
+        this.openHandlers.forEach((handler) => handler())
       })
       this.ws.on('message', (data) => {
         this.messageHandlers.forEach((handler) => handler(data))
@@ -60,7 +61,6 @@ class WebSocketService {
 
       console.log('WebSocket 连接成功')
     } catch (error) {
-      console.error('WebSocket 连接失败:', error)
       VxeUI.modal
         .message({
           id: 'websocketlinkstatus',
@@ -91,6 +91,10 @@ class WebSocketService {
     } else {
       console.error('WebSocket 未连接，无法发送消息')
     }
+  }
+
+  public open(handler: () => void): void {
+    this.openHandlers.push(handler)
   }
 
   public onMessage(handler: (message: WebSocketMessage) => void): void {
