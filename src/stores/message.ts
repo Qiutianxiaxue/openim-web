@@ -2,6 +2,7 @@ import { ref, type Ref } from 'vue'
 import { defineStore } from 'pinia'
 import type { ChatItem, ChatsMessage } from '@/types/message'
 import { wsService } from '@/services/websocket'
+import { deepClone } from '@/utils/deepClone'
 export const useMessageStore = defineStore('message', () => {
   const RecentMessageList: Ref<ChatItem[]> = ref([]) // 最近消息列表
   // 当前消息对话框
@@ -23,7 +24,7 @@ export const useMessageStore = defineStore('message', () => {
     // 更新消息列表的一样数据，如果不存在该会话则会自动创建一个新的会话
     if (!chatItem) return // 如果没有消息，则返回
     // 深度拷贝
-    const RecentMessageListData = JSON.parse(JSON.stringify(RecentMessageList.value)) // 深度拷贝，避免引用类型数据被修改
+    const RecentMessageListData = deepClone(RecentMessageList.value) // 深度拷贝，避免引用类型数据被修改
     const index = RecentMessageListData.findIndex(
       (item: ChatItem) => item.chats_key === chatItem.chats_key,
     ) // 查找当前消息对话框在最近消息列表中的位置
@@ -39,17 +40,21 @@ export const useMessageStore = defineStore('message', () => {
   }
   function updateRecentMessageSetMute(isMute: boolean, chats_key: string) {
     // 更新消息列表的一样数据，如果不存在该会话则会自动创建一个新的会话
-    const chatItem = RecentMessageList.value.find((item) => item.chats_key === chats_key) // 查找当前消息对话框在最近消息列表中的位置
+    const RecentMessageListData = deepClone(RecentMessageList.value) // 深度拷贝，避免引用类型数据被修改
+    const chatItem = RecentMessageListData.find((item) => item.chats_key === chats_key) // 查找当前消息对话框在最近消息列表中的位置
     if (chatItem) {
       chatItem.is_mute = isMute // 更新免打扰状态
     }
+    RecentMessageList.value = RecentMessageListData // 更新最近消息列表
   }
   function updateRecentMessageSetTop(isTop: boolean, chats_key: string) {
     // 更新消息列表的一样数据，如果不存在该会话则会自动创建一个新的会话
-    const chatItem = RecentMessageList.value.find((item) => item.chats_key === chats_key) // 查找当前消息对话框在最近消息列表中的位置
+    const RecentMessageListData = deepClone(RecentMessageList.value) // 深度拷贝，避免引用类型数据被修改
+    const chatItem = RecentMessageListData.find((item) => item.chats_key === chats_key) // 查找当前消息对话框在最近消息列表中的位置
     if (chatItem) {
       chatItem.is_top = isTop // 更新置顶状态
     }
+    RecentMessageList.value = RecentMessageListData // 更新最近消息列表
   }
   function setCurrentMessageBox(chatItem?: ChatItem) {
     if (!chatItem) {
@@ -68,10 +73,11 @@ export const useMessageStore = defineStore('message', () => {
   }
   function deleteRecentMessage(chats_key: string) {
     // 删除最近消息列表中的一条消息
-    const index = RecentMessageList.value.findIndex((item) => item.chats_key === chats_key) // 查找当前消息对话框在最近消息列表中的位置
+    const RecentMessageListData = deepClone(RecentMessageList.value) // 深度拷贝，避免引用类型数据被修改
+    const index = RecentMessageListData.findIndex((item) => item.chats_key === chats_key) // 查找当前消息对话框在最近消息列表中的位置
     if (index !== -1) {
       // 如果存在，则更新最近消息列表
-      RecentMessageList.value.splice(index, 1) // 删除最近消息列表
+      RecentMessageListData.splice(index, 1) // 删除最近消息列表
       if (CurrentMessageBoxKey.value === chats_key) {
         // 如果当前对话框ID与删除的对话框ID相同，则清空当前对话框
         CurrentMessageBoxKey.value = '' // 清空当前对话框ID
@@ -79,6 +85,7 @@ export const useMessageStore = defineStore('message', () => {
         CurrentMessageBoxList.value = [] // 清空当前对话框消息列表
       }
     }
+    RecentMessageList.value = RecentMessageListData // 更新最近消息列表
   }
   function getCurrentMessageBoxList() {} // 切换对话框时加载最后40条消息
   function pushCurrentMessageBoxList() {} // 往当前对话框消息列表追加消息，有新消息一般常用

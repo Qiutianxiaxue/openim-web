@@ -46,9 +46,23 @@ const handleClickShowToolsPull = () => {
 
 // 过滤后的聊天列表
 const filteredChatList = computed(() => {
-  if (!searchKeyword.value) return RecentMessageList.value
-  const keyword = searchKeyword.value.toLowerCase()
-  return RecentMessageList.value.filter((chat) => chat.chats_name.toLowerCase().includes(keyword))
+  let filteredList: ChatItem[] = []
+  if (!searchKeyword.value) {
+    filteredList = RecentMessageList.value
+  } else {
+    const keyword = searchKeyword.value.toLowerCase()
+    filteredList = RecentMessageList.value.filter((chat) =>
+      chat.chats_name.toLowerCase().includes(keyword),
+    )
+  }
+
+  return filteredList.sort((a, b) => {
+    // 优先显示置顶聊天
+    if (a.is_top && !b.is_top) return -1
+    if (!a.is_top && b.is_top) return 1
+    // 按最后发送时间排序
+    return new Date(b.last_send_time).getTime() - new Date(a.last_send_time).getTime()
+  })
 })
 
 // 处理新建聊天
@@ -187,7 +201,7 @@ const handleChatContextClick = (e: MouseEvent, chat: ChatItem) => {
             ></vxe-avatar>
             <div class="chat-info">
               <div class="chat-header">
-                <span class="chat-name"> {{ item.unread_count }} --{{ item.chats_name }} </span>
+                <span class="chat-name">{{ item.chats_name }}</span>
                 <span class="chat-time">{{ formatChatTime(item.last_send_time) }}</span>
               </div>
               <div class="chat-message">{{ item.last_message_content }}</div>
