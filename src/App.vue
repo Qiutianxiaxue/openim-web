@@ -19,15 +19,13 @@ onMounted(async () => {
     })
 
     // 订阅主题
-    wsService.open(() => {
-      console.log('WebSocket 连接成功')
-      setTimeout(() => {
-        wsService.subscribe('test/#')
-        wsService.subscribe('message/#')
-        wsService.sendService('User/getUserClients', {
-          userId: 'entprise_admin',
-        })
-      }, 1000)
+    wsService.open((data) => {
+      console.log('WebSocket 连接成功', data)
+      wsService.subscribe('test/#')
+      wsService.subscribe('message/#')
+      wsService.sendService('User/getUserClients', {
+        userId: 'entprise_admin',
+      })
     })
     // 监听消息
     wsService.onMessage((data) => {

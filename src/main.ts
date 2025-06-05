@@ -16,6 +16,9 @@ import VxeZhCN from 'vxe-pc-ui/lib/language/zh-CN' // 中文(简体)
 import VxeEnUS from 'vxe-pc-ui/lib/language/en-US' // 英文(美国)
 import { useThemeStore } from './stores/theme'
 
+import '@imengyu/vue3-context-menu/lib/vue3-context-menu.css'
+import ContextMenu from '@imengyu/vue3-context-menu'
+
 const pinia = createPinia()
 pinia.use(piniaPluginPersistedstate)
 
@@ -29,6 +32,7 @@ app.use(pinia)
 app.use(router)
 app.use(i18n)
 app.use(VxeUI)
+app.use(ContextMenu)
 app.directive('input-listener', inputListener) // 注册全局指令
 
 // 初始化主题

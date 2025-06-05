@@ -23,12 +23,17 @@ class WebSocketService {
       this.ws = new OpenIMWebSocket({
         url,
         headers,
-        enableLogging: true,
+        enableLogging: false,
         reconnectInterval: 3000,
         maxReconnectAttempts: 5,
       })
       this.ws.on('open', () => {})
       this.ws.on('message', (data) => {
+        console.log('WebSocket 收到message消息:', data)
+        this.messageHandlers.forEach((handler) => handler(data))
+      })
+      this.ws.on('service_response', (data) => {
+        console.log('WebSocket 收到service_response消息:', data)
         this.messageHandlers.forEach((handler) => handler(data))
       })
       this.ws.on('connected', (data) => {
@@ -37,6 +42,7 @@ class WebSocketService {
           content: `消息服务已连接`,
           status: 'success',
         })
+        console.log('WebSocket 连接成功', this.openHandlers)
         this.openHandlers.forEach((handler) => handler(data))
       })
       this.ws.on('connect_error', (data) => {
@@ -114,7 +120,7 @@ class WebSocketService {
     }
   }
 
-  public open(handler: () => void): void {
+  public open(handler: (data: WebSocketMessage) => void): void {
     this.openHandlers.push(handler)
   }
 

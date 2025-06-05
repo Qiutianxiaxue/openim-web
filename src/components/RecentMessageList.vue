@@ -1,30 +1,196 @@
+<script setup lang="ts">
+import type { ChatItem } from '@/types/message'
+import { ref, computed } from 'vue'
+import { VxeUI, type VxePulldownEvents, type VxePulldownPropTypes } from 'vxe-pc-ui'
+import { useMessageStore } from '@/stores/message'
+import { storeToRefs } from 'pinia'
+import { formatChatTime } from '@/utils/time'
+import ContextMenu from '@imengyu/vue3-context-menu'
+
+const messageStore = useMessageStore()
+const { RecentMessageList, CurrentMessageBoxKey } = storeToRefs(messageStore)
+
+// 搜索关键词
+const searchKeyword = ref<string>('')
+
+// 工具下拉菜单显示状态
+const showToolsPull = ref(false)
+const pullOptions = ref<VxePulldownPropTypes.Options>([
+  { label: '添加好友', value: 'addFriend' },
+  { label: '添加群聊', value: 'addGroup' },
+  { label: '创建聊天', value: 'createChat' },
+  { label: '创建群聊', value: 'createGroup' },
+])
+
+const optionClickEvent: VxePulldownEvents.OptionClick = ({ option }) => {
+  switch (option.value) {
+    case 'addFriend':
+      addFriend()
+      break
+    case 'addGroup':
+      addGroup()
+      break
+    case 'createChat':
+      createChat()
+      break
+    case 'createGroup':
+      createGroup()
+      break
+  }
+}
+
+// 处理工具下拉菜单显示状态变化
+const handleClickShowToolsPull = () => {
+  showToolsPull.value = !showToolsPull.value
+}
+
+// 过滤后的聊天列表
+const filteredChatList = computed(() => {
+  if (!searchKeyword.value) return RecentMessageList.value
+  const keyword = searchKeyword.value.toLowerCase()
+  return RecentMessageList.value.filter((chat) => chat.chats_name.toLowerCase().includes(keyword))
+})
+
+// 处理新建聊天
+const addFriend = () => {
+  // TODO: 实现新建聊天功能
+  console.log('新建聊天')
+}
+const addGroup = () => {}
+const createChat = () => {}
+const createGroup = () => {}
+
+// 处理聊天选择
+const handleChatSelect = (chat: ChatItem) => {
+  CurrentMessageBoxKey.value = chat.chats_key
+  // TODO: 触发聊天选择事件
+  console.log('选择聊天:', chat)
+}
+const handleChatContextClick = (e: MouseEvent, chat: ChatItem) => {
+  // TODO: 实现聊天右键菜单功能
+  console.log('右键菜单:', chat)
+  //prevent the browser's default menu
+  e.preventDefault()
+  //show your menu
+  const contextmenu = {
+    x: e.x,
+    y: e.y,
+    theme: 'flat',
+    items: [
+      {
+        label: '删除',
+        preserveIconWidth: false,
+        onClick: () => {
+          VxeUI.modal
+            .confirm({
+              title: '删除聊天',
+              content: `确定删除与 ${chat.chats_name} 的聊天记录吗？`,
+              draggable: false,
+            })
+            .then((res) => {
+              // 删除聊天记录
+              if (res === 'confirm') {
+                messageStore.deleteChats(chat.chats_key)
+              }
+            })
+        },
+      },
+      {
+        label: chat.is_top ? '取消置顶' : '设为置顶',
+        preserveIconWidth: false,
+        divided: true,
+        onClick: () => {
+          messageStore.setChatsTop(chat.chats_key, !chat.is_top)
+        },
+      },
+      {
+        label: chat.is_mute ? '取消免打扰' : '设为免打扰',
+        preserveIconWidth: false,
+        divided: true,
+        onClick: () => {
+          messageStore.setChatsMute(chat.chats_key, !chat.is_mute)
+        },
+      },
+      {
+        label: '全部已读',
+        preserveIconWidth: false,
+        onClick: () => {
+          messageStore.markMessagesAsRead(chat.chats_key)
+        },
+      },
+    ],
+  }
+
+  //这个函数与 this.$contextmenu 一致
+  ContextMenu.showContextMenu(contextmenu)
+}
+</script>
+
 <template>
   <vxe-layout-container vertical class="recent-message-list">
     <vxe-layout-header>
       <div class="search-area">
         <vxe-layout-container>
           <vxe-layout-body>
-            <vxe-input v-model="searchKeyword" placeholder="搜索" type="search" clearable></vxe-input>
+            <vxe-input
+              v-model="searchKeyword"
+              placeholder="搜索"
+              type="search"
+              clearable
+            ></vxe-input>
           </vxe-layout-body>
           <vxe-layout-aside :width="45" class="centered-aside">
-            <vxe-button icon="vxe-icon-add" @click="handleNewChat"></vxe-button>
+            <vxe-pulldown
+              transfer
+              :options="pullOptions"
+              trigger="click"
+              @option-click="optionClickEvent"
+            >
+              <template #default>
+                <vxe-button icon="vxe-icon-add" @click="handleClickShowToolsPull"></vxe-button>
+              </template>
+            </vxe-pulldown>
           </vxe-layout-aside>
         </vxe-layout-container>
       </div>
     </vxe-layout-header>
 
     <vxe-layout-body>
-      <vxe-list height="100%" :data="filteredChatList" :virtual-y-config="{ enabled: true }" auto-resize>
+      <vxe-list
+        height="100%"
+        :data="filteredChatList"
+        :virtual-y-config="{ enabled: true }"
+        auto-resize
+      >
         <template #default="{ items }">
-          <div class="chat-item" v-for="item in items" :key="item.id" @click="handleChatSelect(item)"
-            :class="{ active: selectedChatId === item.id }">
-            <img :src="item.avatar" alt="Avatar" class="chat-avatar" />
+          <div
+            class="chat-item"
+            v-for="item in items"
+            :key="item.chats_key"
+            @click="handleChatSelect(item)"
+            @contextmenu.prevent="handleChatContextClick($event, item)"
+            :class="{ active: CurrentMessageBoxKey === item.chats_key, top: item.is_top }"
+          >
+            <vxe-avatar
+              :src="item.chats_icon"
+              :width="48"
+              :height="48"
+              v-if="item.is_mute"
+              :dot="item.unread_count > 0"
+            ></vxe-avatar>
+            <vxe-avatar
+              :src="item.chats_icon"
+              :width="48"
+              :height="48"
+              v-else
+              :count="item.unread_count"
+            ></vxe-avatar>
             <div class="chat-info">
               <div class="chat-header">
-                <span class="chat-name">{{ item.name }}</span>
-                <span class="chat-time">{{ item.time }}</span>
+                <span class="chat-name"> {{ item.unread_count }} --{{ item.chats_name }} </span>
+                <span class="chat-time">{{ formatChatTime(item.last_send_time) }}</span>
               </div>
-              <div class="chat-message">{{ item.lastMessage }}</div>
+              <div class="chat-message">{{ item.last_message_content }}</div>
             </div>
           </div>
         </template>
@@ -32,69 +198,6 @@
     </vxe-layout-body>
   </vxe-layout-container>
 </template>
-
-<script setup lang="ts">
-import { ref, computed } from 'vue'
-
-// 定义聊天项类型
-interface ChatItem {
-  id: number
-  name: string
-  avatar: string
-  lastMessage: string
-  time: string
-}
-
-// 搜索关键词
-const searchKeyword = ref('')
-
-// 选中的聊天ID
-const selectedChatId = ref<number | null>(null)
-
-// 模拟数据
-const chatList = ref<ChatItem[]>([])
-
-// 生成模拟聊天列表数据
-const generateDummyChatList = (count: number): ChatItem[] => {
-  const list: ChatItem[] = []
-  for (let i = 1; i <= count; i++) {
-    list.push({
-      id: i,
-      name: `用户 ${i}`,
-      avatar: `https://picsum.photos/40/40?random=${i}`,
-      lastMessage: `这是用户 ${i} 的最后一条消息。`,
-      time: `今天 ${Math.floor(Math.random() * 24).toString().padStart(2, '0')}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')}`,
-    })
-  }
-  return list
-}
-
-// 初始化聊天列表数据
-chatList.value = generateDummyChatList(2000)
-
-// 过滤后的聊天列表
-const filteredChatList = computed(() => {
-  if (!searchKeyword.value) return chatList.value
-  const keyword = searchKeyword.value.toLowerCase()
-  return chatList.value.filter(chat =>
-    chat.name.toLowerCase().includes(keyword) ||
-    chat.lastMessage.toLowerCase().includes(keyword)
-  )
-})
-
-// 处理新建聊天
-const handleNewChat = () => {
-  // TODO: 实现新建聊天功能
-  console.log('新建聊天')
-}
-
-// 处理聊天选择
-const handleChatSelect = (chat: ChatItem) => {
-  selectedChatId.value = chat.id
-  // TODO: 触发聊天选择事件
-  console.log('选择聊天:', chat)
-}
-</script>
 
 <style lang="scss">
 .recent-message-list {
@@ -136,7 +239,6 @@ const handleChatSelect = (chat: ChatItem) => {
   .vxe-layout-container {
     overflow: hidden;
   }
-
 }
 
 .search-area {
@@ -151,7 +253,6 @@ const handleChatSelect = (chat: ChatItem) => {
   }
 }
 
-
 .chat-item {
   display: flex;
   padding: 12px 16px;
@@ -163,7 +264,9 @@ const handleChatSelect = (chat: ChatItem) => {
   &:hover {
     background-color: var(--vxe-ui-base-hover-background-color);
   }
-
+  &.top {
+    background-color: var(--vxe-ui-base-hover-background-color);
+  }
   &.active {
     background-color: var(--vxe-ui-base-active-background-color);
   }
@@ -173,6 +276,7 @@ const handleChatSelect = (chat: ChatItem) => {
     height: 48px;
     border-radius: 8px;
     object-fit: cover;
+    overflow: hidden;
   }
 
   .chat-info {
@@ -205,7 +309,6 @@ const handleChatSelect = (chat: ChatItem) => {
     }
   }
 }
-
 
 .centered-aside {
   display: flex;

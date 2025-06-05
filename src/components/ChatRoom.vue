@@ -13,7 +13,12 @@
 
       <!-- 消息列表 -->
       <div class="message-list">
-        <ChatMessage v-for="message in messages" :key="message.id" v-bind="message" @preview="handlePreview" />
+        <ChatMessage
+          v-for="message in messages"
+          :key="message.id"
+          v-bind="message"
+          @preview="handlePreview"
+        />
       </div>
     </div>
 
@@ -71,9 +76,8 @@ const loadHistoryMessages = async () => {
     const oldScrollTop = chatBody.scrollTop
     const oldScrollHeight = chatBody.scrollHeight
 
-
     // 模拟API请求延迟
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    await new Promise((resolve) => setTimeout(resolve, 1000))
 
     // 模拟历史消息数据
     const newMessages: ChatMessageType[] = Array.from({ length: 20 }, (_, index) => ({
@@ -89,7 +93,7 @@ const loadHistoryMessages = async () => {
       name: `用户${index}`,
       time: Date.now() - index * 60000,
       isSelf: Math.random() > 0.5,
-      useRead: Math.random() > 0.5 ? 1 : 0
+      useRead: Math.random() > 0.5 ? 1 : 0,
     }))
 
     // 将新消息插入到列表前面
@@ -115,25 +119,27 @@ const loadHistoryMessages = async () => {
 // 加载新消息的辅助函数
 const loadNewMessages = async () => {
   // 模拟API请求延迟
-  await new Promise(resolve => setTimeout(resolve, 1000))
+  await new Promise((resolve) => setTimeout(resolve, 1000))
 
   // 模拟新消息数据
   const index = dayjs().valueOf()
-  const newMessages: ChatMessageType[] = [{
-    id: `history-${index}`,
-    type: Math.random() > 0.5 ? 'text' : 'file',
-    content: `消息 ${index}`,
-    fileId: `file-${index}`,
-    fileName: Math.random() > 0.5 ? `文件csum.photos/400/300?${index}.jpg` : `文件${index}.jpg`,
-    fileSize: Math.random() > 0.5 ? 1024 * 1024 : 1024 * 1024,
-    fileType: Math.random() > 0.5 ? 'image' : 'pdf',
-    fileUrl: `https://picsum.photos/400/300?random=${index}`,
-    avatar: `https://picsum.photos/40/40?random=${index}`,
-    name: `用户${index}`,
-    time: Date.now(),
-    isSelf: Math.random() > 0.5,
-    useRead: Math.random() > 0.5 ? 1 : 0
-  }]
+  const newMessages: ChatMessageType[] = [
+    {
+      id: `history-${index}`,
+      type: Math.random() > 0.5 ? 'text' : 'file',
+      content: `消息 ${index}`,
+      fileId: `file-${index}`,
+      fileName: Math.random() > 0.5 ? `文件csum.photos/400/300?${index}.jpg` : `文件${index}.jpg`,
+      fileSize: Math.random() > 0.5 ? 1024 * 1024 : 1024 * 1024,
+      fileType: Math.random() > 0.5 ? 'image' : 'pdf',
+      fileUrl: `https://picsum.photos/400/300?random=${index}`,
+      avatar: `https://picsum.photos/40/40?random=${index}`,
+      name: `用户${index}`,
+      time: Date.now(),
+      isSelf: Math.random() > 0.5,
+      useRead: Math.random() > 0.5 ? 1 : 0,
+    },
+  ]
 
   // 将新消息添加到列表末尾
   messages.value = [...messages.value, ...newMessages]
@@ -144,7 +150,6 @@ const loadNewMessages = async () => {
   // 检查是否在底部
   const chatBody = chatBodyRef.value
   if (!chatBody) return
-
 
   // 如果距离底部小于50px，自动滚动到底部
   if (isAtBottom.value) {
@@ -195,7 +200,6 @@ const scrollToBottom = () => {
   hasNewMessage.value = false
 }
 
-
 // 处理文件预览
 const handlePreview = (file: { url?: string; thumbUrl?: string }) => {
   // TODO: 实现文件预览功能
@@ -220,13 +224,13 @@ onMounted(async () => {
   chatBodyRef.value?.addEventListener('scroll', handleScrollWithDebounce)
 
   // 定时加载新消息
-  setInterval(loadNewMessages, 10000)
+  // setInterval(loadNewMessages, 10000)
 })
 
 // 清理
 onUnmounted(() => {
   // 清理文件URL
-  messages.value.forEach(message => {
+  messages.value.forEach((message) => {
     if (message.fileUrl) {
       URL.revokeObjectURL(message.fileUrl)
     }
@@ -250,10 +254,12 @@ onUnmounted(() => {
 }
 
 .chat-header {
-  padding: 16px;
+  padding: 15px;
   background: var(--vxe-ui-modal-header-background-color);
   border-bottom: 1px solid var(--vxe-ui-input-border-color);
   flex-shrink: 0;
+  height: 56px;
+  overflow: hidden;
 }
 
 .chat-title {

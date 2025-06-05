@@ -10,7 +10,14 @@
   },
   "editor.formatOnSave": true,
   "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "cSpell.words": ["openim", "oxlint", "persistedstate", "Qiutianxiaxue", "websocketlinkstatus"],
+  "cSpell.words": [
+    "imengyu",
+    "openim",
+    "oxlint",
+    "persistedstate",
+    "Qiutianxiaxue",
+    "websocketlinkstatus"
+  ],
   "i18n-ally.localesPaths": ["src/locales"],
   "i18n-ally.keystyle": "nested",
   "i18n-ally.namespace": true,

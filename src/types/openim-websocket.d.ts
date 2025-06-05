@@ -6,6 +6,7 @@ declare module 'openim-websocket' {
     message?: string
     client_time?: string | number
     data?: Record<string, unknown>
+    payload?: Record<string, unknown>
   }
 
   export interface WebSocketError {
@@ -29,11 +30,12 @@ declare module 'openim-websocket' {
     subscribe(topic: string): void
     unsubscribe(topic: string): void
     on(event: 'message', handler: (data: WebSocketMessage) => void): void
+    on(event: 'service_response', handler: (data: WebSocketMessage) => void): void
     on(event: 'error', handler: (error: WebSocketError) => void): void
     on(event: 'connect_error', handler: (data: WebSocketMessage) => void): void
     on(event: 'force_offline', handler: (data: WebSocketMessage) => void): void
     on(event: 'connected', handler: (data: WebSocketMessage) => void): void
-    on(event: 'open', handler: () => void): void
+    on(event: 'open', handler: (data: WebSocketMessage) => void): void
     on(event: 'close', handler: () => void): void
   }
 }

@@ -36,6 +36,7 @@
     "release": "npm version patch --no-git-tag-version && npm publish --access public"
   },
   "dependencies": {
+    "@imengyu/vue3-context-menu": "^1.5.0",
     "dayjs": "^1.11.13",
     "openim-websocket": "^1.0.14",
     "pinia": "^3.0.2",
