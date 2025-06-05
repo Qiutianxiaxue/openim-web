@@ -23,5 +23,5 @@ export function formatChatTime(timeStr: string): string {
   }
 
   // 今天之前
-  return `${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${timeStrSimple}`
+  return `${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
 }

@@ -140,11 +140,28 @@ export const useMessageStore = defineStore('message', () => {
       const payloadData = data.payload?.data as { value?: unknown } | undefined
       if (payloadData && payloadData.value) {
         const chatItem = payloadData.value as ChatItem
-        console.log('markMessagesAsRead', chatItem)
 
         updateRecentMessageList(chatItem) // 更新消息列表
         if (CurrentMessageBoxKey.value === '') {
           setCurrentMessageBox(chatItem) // 设置当前对话框
+        }
+      }
+    }
+    if (data.service === 'MessageSending/sendRealTimeMessage') {
+      const payloadData = data.payload?.data as { chats?: unknown } | undefined
+      if (payloadData && payloadData.chats) {
+        const chatItem = payloadData.chats as ChatItem
+        console.log('sendRealTimeMessage', chatItem)
+
+        updateRecentMessageList(chatItem) // 更新消息列表
+        if (CurrentMessageBoxKey.value === '') {
+          setCurrentMessageBox(chatItem) // 设置当前对话框
+        } else if (CurrentMessageBoxKey.value === chatItem.chats_key) {
+          pushCurrentMessageBoxList() // 往当前对话框消息列表追加消息，有新消息一般常用
+          const isWindowFocused = () => document.hasFocus() // 判断窗口是否处于聚焦状态
+          if (isWindowFocused()) {
+            markMessagesAsRead(chatItem.chats_key) // 标记消息为已读
+          }
         }
       }
     }
@@ -167,7 +184,12 @@ export const useMessageStore = defineStore('message', () => {
       }
     }
   })
-
+  window.addEventListener('focus', () => {
+    if (CurrentMessageBoxKey.value !== '') {
+      // 如果当前对话框ID不为空，则标记当前对话框的所有消息为已读
+      markMessagesAsRead(CurrentMessageBoxKey.value) // 标记消息为已读
+    }
+  })
   return {
     RecentMessageList,
     CurrentMessageBoxKey,

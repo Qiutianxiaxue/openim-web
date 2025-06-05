@@ -78,11 +78,9 @@ const createGroup = () => {}
 const handleChatSelect = (chat: ChatItem) => {
   CurrentMessageBoxKey.value = chat.chats_key
   // TODO: 触发聊天选择事件
-  console.log('选择聊天:', chat)
+  messageStore.markMessagesAsRead(chat.chats_key)
 }
 const handleChatContextClick = (e: MouseEvent, chat: ChatItem) => {
-  // TODO: 实现聊天右键菜单功能
-  console.log('右键菜单:', chat)
   //prevent the browser's default menu
   e.preventDefault()
   //show your menu
@@ -306,6 +304,10 @@ const handleChatContextClick = (e: MouseEvent, chat: ChatItem) => {
       .chat-name {
         font-weight: 500;
         color: var(--vxe-ui-font-color);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        width: 120px;
       }
 
       .chat-time {
