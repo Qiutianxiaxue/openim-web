@@ -2,51 +2,40 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 
 interface UserState {
-  id: string
-  name: string
+  user_id: string
+  username: string
+  nickname: string
   avatar: string
-  token: string
 }
 
 export const useUserStore = defineStore(
   'user',
   () => {
-    const id = ref('')
-    const name = ref('')
+    const user_id = ref('')
+    const nickname = ref('')
+    const username = ref('')
     const avatar = ref('')
-    const token = ref('')
 
-    const isLoggedIn = computed(() => !!token.value)
+    const isLoggedIn = computed(() => !!user_id.value)
     const userInfo = computed(() => ({
-      id: id.value,
-      name: name.value,
+      user_id: user_id.value,
+      nickname: nickname.value,
+      username: username.value,
       avatar: avatar.value,
     }))
 
     function setUserInfo(userInfo: Partial<UserState>) {
-      if (userInfo.id) id.value = userInfo.id
-      if (userInfo.name) name.value = userInfo.name
-      if (userInfo.avatar) avatar.value = userInfo.avatar
-      if (userInfo.token) token.value = userInfo.token
+      user_id.value = userInfo.user_id || ''
+      nickname.value = userInfo.nickname || ''
+      username.value = userInfo.username || ''
+      avatar.value = userInfo.avatar || ''
     }
 
     function clearUserInfo() {
-      id.value = ''
-      name.value = ''
+      user_id.value = ''
+      nickname.value = ''
+      username.value = ''
       avatar.value = ''
-      token.value = ''
-    }
-
-    async function login(username: string, _password: string) {
-      // 这里添加实际的登录逻辑
-      const userInfo = {
-        id: '1',
-        name: username,
-        avatar: 'https://example.com/avatar.jpg',
-        token: 'sample-token',
-      }
-      setUserInfo(userInfo)
-      return userInfo
     }
 
     async function logout() {
@@ -54,15 +43,14 @@ export const useUserStore = defineStore(
     }
 
     return {
-      id,
-      name,
+      user_id,
+      nickname,
+      username,
       avatar,
-      token,
       isLoggedIn,
       userInfo,
       setUserInfo,
       clearUserInfo,
-      login,
       logout,
     }
   },

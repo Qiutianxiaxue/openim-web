@@ -76,7 +76,8 @@ const createGroup = () => {}
 
 // 处理聊天选择
 const handleChatSelect = (chat: ChatItem) => {
-  CurrentMessageBoxKey.value = chat.chats_key
+  // CurrentMessageBoxKey.value = chat.chats_key
+  messageStore.setCurrentMessageBox(chat)
   // TODO: 触发聊天选择事件
   messageStore.markMessagesAsRead(chat.chats_key)
 }

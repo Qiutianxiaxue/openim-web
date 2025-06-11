@@ -1,29 +1,22 @@
 <template>
-  <div class="chat-message" :class="{ 'is-self': isSelf }">
+  <div class="chat-message" :class="{ 'is-self': isSelf(send_user_id) }">
     <div class="message-avatar">
-      <img :src="avatar" :alt="name" />
+      <img :src="send_user_id" :alt="send_user_id" />
     </div>
     <div class="message-content">
-      <div class="message-name">{{ name }}</div>
+      <div class="message-name">{{ send_user_id }}</div>
       <div class="message-bubble">
         <!-- 文本消息 -->
-        <div v-if="type === 'text'" class="message-text">{{ content }}</div>
+        <div v-if="message_type === 'text'" class="message-text">{{ message_content.text }}</div>
         <!-- 其他类型附件 -->
-        <div v-else-if="type === 'file' && fileId">
-          <Attachments :items="[{
-            uid: fileId,
-            name: fileName || '',
-            fileSize: fileSize || 0,
-            fileType: fileType,
-            url: fileUrl,
-            thumbUrl: fileThumbUrl
-          }]" :hide-upload="true" @preview="handlePreview" />
+        <div v-else-if="message_type === 'file'">
+          <!-- <Attachments :items="[message_content]" :hide-upload="true" @preview="handlePreview" /> -->
         </div>
       </div>
       <div class="message-footer">
-        <div class="message-time">{{ formatTime(time) }}</div>
-        <div class="message-status" v-if="isSelf">
-          <span v-if="isRead(useRead)" class="status-read">已读</span>
+        <div class="message-time">{{ formatTime(create_time) }}</div>
+        <div class="message-status" v-if="isSelf(send_user_id)">
+          <span v-if="isRead(is_read)" class="status-read">已读</span>
           <span v-else class="status-unread">未读</span>
         </div>
       </div>
@@ -32,25 +25,14 @@
 </template>
 
 <script setup lang="ts">
-import type { FileType } from '@/types/FileType'
 import Attachments from './Attachments.vue'
+import type { ChatsMessage } from '@/types/message'
+import { useUserStore } from '@/stores/user'
+import { storeToRefs } from 'pinia'
+defineProps<ChatsMessage>()
 
-defineProps<{
-  id: string | number
-  type: 'text' | 'file'
-  content?: string
-  fileId?: string
-  fileName?: string
-  fileSize?: number
-  fileType?: FileType
-  fileUrl?: string
-  fileThumbUrl?: string
-  avatar: string
-  name: string
-  time: number
-  useRead: number
-  isSelf: boolean
-}>()
+const suerStore = useUserStore()
+const { user_id } = storeToRefs(suerStore)
 
 const emit = defineEmits<{
   (e: 'preview', file: { url?: string; thumbUrl?: string }): void
@@ -60,12 +42,15 @@ const handlePreview = (file: { url?: string; thumbUrl?: string }) => {
   emit('preview', file)
 }
 
+const isSelf = (sender_user_id: string) => {
+  return user_id.value === sender_user_id
+}
 const isRead = (read: number) => {
   return read === 1
 }
 
-const formatTime = (timestamp: number) => {
-  const date = new Date(timestamp)
+const formatTime = (create_time: string) => {
+  const date = new Date(create_time)
   const hours = date.getHours().toString().padStart(2, '0')
   const minutes = date.getMinutes().toString().padStart(2, '0')
   return `${hours}:${minutes}`
@@ -102,7 +87,7 @@ const formatTime = (timestamp: number) => {
       }
 
       // 暗黑模式
-      :root[data-theme="dark"] & {
+      :root[data-theme='dark'] & {
         background-color: var(--vxe-ui-primary-color);
         color: #fff;
 
@@ -143,11 +128,14 @@ const formatTime = (timestamp: number) => {
   background-color: var(--vxe-ui-layout-background-color);
   border-radius: 4px 16px 16px 16px;
   word-break: break-all;
-  box-shadow: 0 1px 2px var(--vxe-ui-input-border-color), 1px 1px 2px var(--vxe-ui-input-border-color), -1px -1px 1px 0px var(--vxe-ui-input-border-color);
+  box-shadow:
+    0 1px 2px var(--vxe-ui-input-border-color),
+    1px 1px 2px var(--vxe-ui-input-border-color),
+    -1px -1px 1px 0px var(--vxe-ui-input-border-color);
   overflow: hidden;
 
   // 暗黑模式
-  :root[data-theme="dark"] & {
+  :root[data-theme='dark'] & {
     border-color: var(--vxe-ui-border-color);
     box-shadow: 0 1px 2px var(--vxe-ui-border-color);
   }

@@ -1,12 +1,7 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
-import GlobalInputListener from '@/components/GlobalInputListener.vue'
 import { onMounted, onUnmounted } from 'vue'
 import { wsService } from './services/websocket'
-
-const handleInput = (text: string) => {
-  console.log('收到输入:', text)
-}
 
 onMounted(async () => {
   try {
@@ -15,17 +10,12 @@ onMounted(async () => {
       Appid: '1001',
       ClientId: '1021312301',
       Timestamp: '1739166426',
-      Authorization: 'Bearer QC5586bdd29fbc86b3a39df6b',
+      Authorization: 'Bearer QCceaf6ef73e8ae2b582e04c5',
     })
 
     // 订阅主题
     wsService.open((data) => {
       console.log('WebSocket 连接成功', data)
-      wsService.subscribe('test/#')
-      wsService.subscribe('message/#')
-      wsService.sendService('User/getUserClients', {
-        userId: 'entprise_admin',
-      })
     })
     // 监听消息
     wsService.onMessage((data) => {
@@ -43,7 +33,6 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <GlobalInputListener :show-input-box="true" @input="handleInput" />
   <RouterView />
 </template>
 

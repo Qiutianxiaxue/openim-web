@@ -14,8 +14,8 @@
       <!-- 消息列表 -->
       <div class="message-list">
         <ChatMessage
-          v-for="message in messages"
-          :key="message.id"
+          v-for="message in CurrentMessageBoxList"
+          :key="message.chats_key"
           v-bind="message"
           @preview="handlePreview"
         />
@@ -34,7 +34,9 @@
 import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import ChatMessage from './ChatMessage.vue'
 import type { FileType } from '@/types/FileType'
-import dayjs from 'dayjs'
+
+import { useMessageStore } from '@/stores/message'
+import { storeToRefs } from 'pinia'
 
 interface ChatMessageType {
   id: string | number
@@ -63,103 +65,106 @@ const loading = ref(false)
 const hasNewMessage = ref(false)
 const isAtBottom = ref(true)
 
-// 模拟加载历史消息
-const loadHistoryMessages = async () => {
-  if (loading.value) return
-  loading.value = true
+const messageStore = useMessageStore()
+const { CurrentMessageBoxList } = storeToRefs(messageStore)
 
-  try {
-    const chatBody = chatBodyRef.value
-    if (!chatBody) return
+// // 模拟加载历史消息
+// const loadHistoryMessages = async () => {
+//   if (loading.value) return
+//   loading.value = true
 
-    // 保存当前滚动位置
-    const oldScrollTop = chatBody.scrollTop
-    const oldScrollHeight = chatBody.scrollHeight
+//   try {
+//     const chatBody = chatBodyRef.value
+//     if (!chatBody) return
 
-    // 模拟API请求延迟
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+//     // 保存当前滚动位置
+//     const oldScrollTop = chatBody.scrollTop
+//     const oldScrollHeight = chatBody.scrollHeight
 
-    // 模拟历史消息数据
-    const newMessages: ChatMessageType[] = Array.from({ length: 20 }, (_, index) => ({
-      id: `history-${index}`,
-      type: Math.random() > 0.5 ? 'text' : 'file',
-      content: `消息 ${index}`,
-      fileId: `file-${index}`,
-      fileName: Math.random() > 0.5 ? `文件csum.photos/400/300?${index}.jpg` : `文件${index}.jpg`,
-      fileSize: Math.random() > 0.5 ? 1024 * 1024 : 1024 * 1024,
-      fileType: Math.random() > 0.5 ? 'image' : 'pdf',
-      fileUrl: `https://picsum.photos/400/300?random=${index}`,
-      avatar: `https://picsum.photos/40/40?random=${index}`,
-      name: `用户${index}`,
-      time: Date.now() - index * 60000,
-      isSelf: Math.random() > 0.5,
-      useRead: Math.random() > 0.5 ? 1 : 0,
-    }))
+//     // 模拟API请求延迟
+//     await new Promise((resolve) => setTimeout(resolve, 1000))
 
-    // 将新消息插入到列表前面
-    messages.value = [...newMessages, ...messages.value]
+//     // 模拟历史消息数据
+//     const newMessages: ChatMessageType[] = Array.from({ length: 20 }, (_, index) => ({
+//       id: `history-${index}`,
+//       type: Math.random() > 0.5 ? 'text' : 'file',
+//       content: `消息 ${index}`,
+//       fileId: `file-${index}`,
+//       fileName: Math.random() > 0.5 ? `文件csum.photos/400/300?${index}.jpg` : `文件${index}.jpg`,
+//       fileSize: Math.random() > 0.5 ? 1024 * 1024 : 1024 * 1024,
+//       fileType: Math.random() > 0.5 ? 'image' : 'pdf',
+//       fileUrl: `https://picsum.photos/400/300?random=${index}`,
+//       avatar: `https://picsum.photos/40/40?random=${index}`,
+//       name: `用户${index}`,
+//       time: Date.now() - index * 60000,
+//       isSelf: Math.random() > 0.5,
+//       useRead: Math.random() > 0.5 ? 1 : 0,
+//     }))
 
-    // 等待DOM更新和图片加载
-    await nextTick()
+//     // 将新消息插入到列表前面
+//     messages.value = [...newMessages, ...messages.value]
 
-    // 计算新的滚动位置
-    const newScrollHeight = chatBody.scrollHeight
-    console.log('newScrollHeight', newScrollHeight)
-    console.log('oldScrollHeight', oldScrollHeight)
-    console.log('oldScrollTop', oldScrollTop)
-    const heightDifference = newScrollHeight - oldScrollHeight
-    console.log('heightDifference', heightDifference)
-    chatBody.scrollTop = oldScrollTop + heightDifference
-    console.log('newScrollTop', oldScrollTop + heightDifference)
-  } finally {
-    loading.value = false
-  }
-}
+//     // 等待DOM更新和图片加载
+//     await nextTick()
 
-// 加载新消息的辅助函数
-const loadNewMessages = async () => {
-  // 模拟API请求延迟
-  await new Promise((resolve) => setTimeout(resolve, 1000))
+//     // 计算新的滚动位置
+//     const newScrollHeight = chatBody.scrollHeight
+//     console.log('newScrollHeight', newScrollHeight)
+//     console.log('oldScrollHeight', oldScrollHeight)
+//     console.log('oldScrollTop', oldScrollTop)
+//     const heightDifference = newScrollHeight - oldScrollHeight
+//     console.log('heightDifference', heightDifference)
+//     chatBody.scrollTop = oldScrollTop + heightDifference
+//     console.log('newScrollTop', oldScrollTop + heightDifference)
+//   } finally {
+//     loading.value = false
+//   }
+// }
 
-  // 模拟新消息数据
-  const index = dayjs().valueOf()
-  const newMessages: ChatMessageType[] = [
-    {
-      id: `history-${index}`,
-      type: Math.random() > 0.5 ? 'text' : 'file',
-      content: `消息 ${index}`,
-      fileId: `file-${index}`,
-      fileName: Math.random() > 0.5 ? `文件csum.photos/400/300?${index}.jpg` : `文件${index}.jpg`,
-      fileSize: Math.random() > 0.5 ? 1024 * 1024 : 1024 * 1024,
-      fileType: Math.random() > 0.5 ? 'image' : 'pdf',
-      fileUrl: `https://picsum.photos/400/300?random=${index}`,
-      avatar: `https://picsum.photos/40/40?random=${index}`,
-      name: `用户${index}`,
-      time: Date.now(),
-      isSelf: Math.random() > 0.5,
-      useRead: Math.random() > 0.5 ? 1 : 0,
-    },
-  ]
+// // 加载新消息的辅助函数
+// const loadNewMessages = async () => {
+//   // 模拟API请求延迟
+//   await new Promise((resolve) => setTimeout(resolve, 1000))
 
-  // 将新消息添加到列表末尾
-  messages.value = [...messages.value, ...newMessages]
+//   // 模拟新消息数据
+//   const index = dayjs().valueOf()
+//   const newMessages: ChatMessageType[] = [
+//     {
+//       id: `history-${index}`,
+//       type: Math.random() > 0.5 ? 'text' : 'file',
+//       content: `消息 ${index}`,
+//       fileId: `file-${index}`,
+//       fileName: Math.random() > 0.5 ? `文件csum.photos/400/300?${index}.jpg` : `文件${index}.jpg`,
+//       fileSize: Math.random() > 0.5 ? 1024 * 1024 : 1024 * 1024,
+//       fileType: Math.random() > 0.5 ? 'image' : 'pdf',
+//       fileUrl: `https://picsum.photos/400/300?random=${index}`,
+//       avatar: `https://picsum.photos/40/40?random=${index}`,
+//       name: `用户${index}`,
+//       time: Date.now(),
+//       isSelf: Math.random() > 0.5,
+//       useRead: Math.random() > 0.5 ? 1 : 0,
+//     },
+//   ]
 
-  // 等待DOM更新
-  await nextTick()
+//   // 将新消息添加到列表末尾
+//   messages.value = [...messages.value, ...newMessages]
 
-  // 检查是否在底部
-  const chatBody = chatBodyRef.value
-  if (!chatBody) return
+//   // 等待DOM更新
+//   await nextTick()
 
-  // 如果距离底部小于50px，自动滚动到底部
-  if (isAtBottom.value) {
-    chatBody.scrollTop = chatBody.scrollHeight
-    hasNewMessage.value = false
-  } else {
-    // 否则显示新消息提示
-    hasNewMessage.value = true
-  }
-}
+//   // 检查是否在底部
+//   const chatBody = chatBodyRef.value
+//   if (!chatBody) return
+
+//   // 如果距离底部小于50px，自动滚动到底部
+//   if (isAtBottom.value) {
+//     chatBody.scrollTop = chatBody.scrollHeight
+//     hasNewMessage.value = false
+//   } else {
+//     // 否则显示新消息提示
+//     hasNewMessage.value = true
+//   }
+// }
 
 // 处理滚动事件
 const handleScroll = () => {
@@ -188,7 +193,7 @@ const handleScrollWithDebounce = () => {
     const { scrollTop } = chatBodyRef.value
     // 只有当滚动完全停止且距离顶部小于100时才加载
     if (scrollTop < 100 && !loading.value) {
-      loadHistoryMessages()
+      // loadHistoryMessages()
     }
   }, 150) // 150ms的防抖时间
 }
@@ -212,7 +217,7 @@ onMounted(async () => {
   await nextTick()
 
   // 加载初始数据
-  await loadHistoryMessages()
+  // await loadHistoryMessages()
 
   // 滚动到底部
   const chatBody = chatBodyRef.value
